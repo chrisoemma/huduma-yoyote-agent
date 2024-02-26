@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, SafeAreaView } from 'react-native';
 import { colors } from '../../utils/colors';
 import { globalStyles } from '../../styles/global';
@@ -6,6 +6,9 @@ import ProviderList from '../../components/ProviderList';
 import ClientList from '../../components/ClientList';
 import FloatBtn from '../../components/FloatBtn';
 import { useTranslation } from 'react-i18next';
+import { useSelector, RootStateOrAny } from 'react-redux';
+import { useAppDispatch } from '../../app/store';
+import { getClients, getProviders } from './RegisterSlice';
 
 
 
@@ -13,35 +16,51 @@ const MyRegisters = ({ navigation }: any) => {
 
   const { t } = useTranslation();
 
+  const dispatch = useAppDispatch();
+
+  const { user } = useSelector(
+    (state: RootStateOrAny) => state.user,
+  );
+
+  const { loading, clients, providers } = useSelector(
+    (state: RootStateOrAny) => state.registers,
+  );
+
+  const {isDarkMode} = useSelector(
+    (state: RootStateOrAny) => state.theme,
+  );
+
+  useEffect(() => {
+    dispatch(getClients({agentId:user?.agent?.id}));
+    dispatch(getProviders({agentId:user?.agent?.id}));
+  }, [dispatch])
+
+
   const [activeTab, setActiveTab] = useState('clients');
-  const [providers, setProviders] = useState([{
-    id: 1,
-    name: 'Juma john'
-  }]);
 
 
   // Fetch and populate 'providers' based on the selected tab
 
   const toggleTab = () => {
 
-  
-
     setActiveTab(activeTab === 'clients' ? 'serviceproviders' : 'clients');
   };
 
-  const renderProviderItem = ({ item }) => (
+  const renderProviderItem = ({ item }:any) => (
     <View style={styles.itemlistContainer}>
       {
-        activeTab === 'clients' ? (<ClientList navigation={navigation} />) : (
-          <ProviderList navigation={navigation} />
+        activeTab === 'clients' ? (<ClientList navigation={navigation} client={item} />) : (
+          <ProviderList navigation={navigation} provider={item} />
         )
       }
     </View>
   );
 
+  const stylesGlobal=globalStyles();
+
   return (
     <SafeAreaView
-      style={globalStyles.scrollBg}
+      style={stylesGlobal.scrollBg}
     >
       <View style={styles.container}>
         <TouchableOpacity
@@ -58,9 +77,10 @@ const MyRegisters = ({ navigation }: any) => {
       </View>
       <View style={styles.listContainer}>
         <FlatList
-          data={providers}
+          data={activeTab === 'clients' ? clients : providers}
           renderItem={renderProviderItem}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item?.id?.toString()}
+          numColumns={2}
         />
       </View>
       <FloatBtn
@@ -80,11 +100,10 @@ const MyRegisters = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: {
-
-    // flex: 1,
     paddingTop: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
+    
 
   },
   toggleButton: {
@@ -106,13 +125,14 @@ const styles = StyleSheet.create({
     // Default text color
   },
   listContainer: {
-    // flex: 1,
+alignItems:'center'
   },
   itemlistContainer: {
+   // width:'50%',
     flexDirection: 'row',
     padding: 10,
     flexWrap: 'wrap',
-    justifyContent: 'center'
+    alignContent:'center',
   }
 });
 export default MyRegisters;

@@ -5,6 +5,11 @@ import RegisterClient from "../features/registers/RegisterClient";
 import Commissions from "../features/commissions/Commissions";
 import Settings from "../features/settings/Settings";
 import { useTranslation } from "react-i18next";
+import EditAccount from "../features/account/EditAccount";
+import ClientDetails from "../features/registers/ClientDetails";
+import ProviderDetails from "../features/registers/ProviderDetails";
+import ChangePassword from "../features/auth/ChangePassword";
+import CommissionDetails from "../features/commissions/CommissionDetails";
 
   
   const AppStack = () => {
@@ -30,10 +35,37 @@ import { useTranslation } from "react-i18next";
         component={RegisterClient}
         options={{ title: t('auth:registerClient') }}
         />
+
+       <Stack.Screen name="Client Details" 
+        component={ClientDetails}
+        options={{ title: t('navigate:clientDetails') }}
+        />
+
+      <Stack.Screen name="Change Password"
+         component={ChangePassword}
+         options={{ title: t('navigate:changePassword') }}
+          />
+
+      <Stack.Screen name="Provider Details" 
+        component={ProviderDetails}
+        options={{ title: t('navigate:providerDetails') }}
+        />
+
+        <Stack.Screen name="Edit Account"
+         component={EditAccount}
+         options={{ title: t('navigate:editAccount') }}
+          />
+
         <Stack.Screen name="Commissions" component={Commissions}
-         options={{ title: t('navigate:commision') }}
+         options={{ title: t('navigate:commissions') }}
          
          />
+
+      <Stack.Screen name="Commission Details" component={CommissionDetails}
+         options={{ title: t('navigate:commissionDetails') }}
+         
+         />
+        
         <Stack.Screen
          name="Settings" 
         component={Settings} 

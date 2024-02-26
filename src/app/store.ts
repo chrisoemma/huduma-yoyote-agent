@@ -13,11 +13,23 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import userReducer from '../features/auth/userSlice';
+import RegisterSlice from '../features/registers/RegisterSlice';
+import OnboardingSlice from '../features/onboarding/OnboardingSlice';
+import languageSlice from '../costants/languageSlice';
+import ThemeSlice from '../features/settings/ThemeSlice';
+import ChartSlice from '../features/home/ChartSlice';
+import CommissionSlice from '../features/commissions/CommissionSlice';
 
 
 
 const reducers = combineReducers({
   user: userReducer,
+  registers:RegisterSlice,
+  onboarding:OnboardingSlice,
+  language:languageSlice,
+  theme:ThemeSlice,
+  charts:ChartSlice,
+  commissions:CommissionSlice
 });
 
 const persistConfig = {

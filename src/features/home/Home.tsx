@@ -1,7 +1,6 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Dimensions } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { PageContainer } from '../../components/PageContainer'
 import { BasicView } from '../../components/BasicView'
 import Databoard from '../../components/Databoard'
 import { colors } from '../../utils/colors'
@@ -10,53 +9,64 @@ import {
     BottomSheetModalProvider,
     BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-// import { useAppDispatch } from '../../app/store'
-import { RootStateOrAny, useSelector } from 'react-redux'
 import { globalStyles } from '../../styles/global'
-import Divider from '../../components/Divider'
 import { useAppDispatch } from '../../app/store'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
+import { useSelector, RootStateOrAny } from 'react-redux'
+import { getClients, getProviders } from '../registers/RegisterSlice'
+import { getCommisionMonthly } from './ChartSlice'
+//import { LineChart } from 'react-native-chart-kit'
+import CustomBackground from '../../components/CustomBgBottomSheet'
 
 
 const Home = ({ navigation }: any) => {
 
-   //
 
-   const { t } = useTranslation();
+    const screenWidth = Dimensions.get('window').width;
+    const screenHeight = Dimensions.get('window').height;
+
+    const { t } = useTranslation();
+
+    const stylesGlobal = globalStyles();
+
     const dispatch = useAppDispatch();
     const [refreshing, setRefreshing] = useState(false);
 
-    // const { loading: productLoading, products } = useSelector(
-    //     (state: RootStateOrAny) => state.products,
+
+    const {isDarkMode} = useSelector(
+        (state: RootStateOrAny) => state.theme,
+      );
+
+    const { user } = useSelector(
+        (state: RootStateOrAny) => state.user,
+    );
+
+    const { loading, clients, providers } = useSelector(
+        (state: RootStateOrAny) => state.registers,
+    );
+
+    // const { commissionChart } = useSelector(
+    //     (state: RootStateOrAny) => state.charts,
     // );
 
-
-    // const { loading: ordersLoading, orders } = useSelector(
-    //     (state: RootStateOrAny) => state.orders,
-    // );
-
-
-    // const { user, loading: loadingUser } = useSelector((state: RootStateOrAny) => state.user);
-
-    // useEffect(() => {
-    //     dispatch(getOrders({ businessId: user.business.id, userType: 'business', orderType: 'active', userId: null }));
-    // }, [])
+    useEffect(() => {
+        dispatch(getClients({ agentId: user?.agent?.id }));
+      //  dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
+        dispatch(getProviders({ agentId: user?.agent?.id }));
+    }, [dispatch])
 
 
-    // useEffect(() => {
-    //     dispatch(getProducts({ businessId: user?.business.id }));
-    // }, [])
+    const callGetDashboard = React.useCallback(() => {
 
-
-    // const callGetDashboard = React.useCallback(() => {
-
-    //     setRefreshing(true);
-    //     dispatch(getOrders({ businessId: user.business.id, userType: 'business', orderType: 'active', userId: null }));
-    //     dispatch(getProducts({ businessId: user?.business.id })).unwrap()
-    //         .then(result => {
-    //             setRefreshing(false);
-    //         })
-    // }, []);
+        setRefreshing(true);
+        dispatch(getClients({ agentId: user?.agent?.id }));
+       // dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
+        dispatch(getProviders({ agentId: user?.agent?.id }))
+            .unwrap()
+            .then(result => {
+                setRefreshing(false);
+            })
+    }, []);
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const [sheetTitle, setSheetTitle] = useState('');
@@ -67,11 +77,22 @@ const Home = ({ navigation }: any) => {
     // callbacks
     const handlePresentModalPress = (title: any) => useCallback(() => {
         setSheetTitle(title)
+        console.log('shittitle', title);
         bottomSheetModalRef.current?.present();
     }, []);
     const handleSheetChanges = useCallback((index: number) => {
         console.log('handleSheetChanges', index);
     }, [])
+
+
+    // const labels = commissionChart?.map(entry => entry.month_name);
+    // const dataset = commissionChart?.map(entry => entry.total_commission);
+
+    // const chartConfig = {
+    //     backgroundGradientFrom: '#fff',
+    //     backgroundGradientTo: '#fff',
+    //     color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
+    // };
 
     return (
         <>
@@ -80,42 +101,71 @@ const Home = ({ navigation }: any) => {
                     horizontal={false}
                     contentInsetAdjustmentBehavior="automatic"
                     keyboardShouldPersistTaps={'handled'}
-                    style={globalStyles.scrollBg}
-                    // refreshControl={
-                    //     <RefreshControl refreshing={refreshing} onRefresh={callGetDashboard} />
-                    // }
+                    style={stylesGlobal.scrollBg}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={callGetDashboard} />
+                    }
 
                 >
-                    <PageContainer>
-                        <BasicView>
-                            <View style={{
-                                flexDirection: 'row',
-                                flexWrap: 'wrap',
-                                alignItems:'center',
-                                justifyContent:'center',
-                                marginTop: 50
-                            }}>
-                                <Databoard
-                                    mainTitle={t('screens:serviceProviders')}
-                                    number="9"
-                                    onPress={handlePresentModalPress('Service providers')}
-                                    color={colors.primary}
-                                />
-                                <Databoard
-                                    mainTitle={t('screens:clients')}
-                                    number="5"
-                                    onPress={handlePresentModalPress('Clients')}
-                                    color={colors.primary}
-                                />
 
-                            </View>
-                        </BasicView>
-                    </PageContainer>
+                    <BasicView>
+                        <View style={{
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginTop: 50
+                        }}>
+                            <Databoard
+                                mainTitle={t('screens:serviceProviders')}
+                                number={providers?.length || 0}
+                                onPress={handlePresentModalPress(`${t('screens:serviceProviders')}`)}
+                                color={colors.primary}
+                            />
+                            <Databoard
+                                mainTitle={t('screens:clients')}
+                                number={clients?.length || 0}
+                                onPress={handlePresentModalPress(`${t('screens:clients')}`)}
+                                color={colors.primary}
+                            />
+
+                        </View>
+                    </BasicView>
+                    {/* <View style={styles.chart}>
+                        
+                     {commissionChart?
+                        ( 
+                            <>
+                        <Text style={{fontSize:18,color:colors.alsoGrey}}>{t('screens:commisionVsMonths')}</Text>
+                        <LineChart
+                            data={{
+                                labels,
+                                datasets: [
+                                    {
+                                        data: dataset,
+                                    },
+                                ],
+                            }}
+                            width={screenWidth}
+                            height={screenHeight * 0.3}
+                            chartConfig={chartConfig}
+                            bezier
+                            style={{
+                                marginVertical: 8,
+                                borderRadius: 16,
+                            }}
+                      />
+                      </>
+                      ):
+                       <Text>{t('screens:noDataAvailable')}</Text>}
+                    </View> */}
+
                 </ScrollView>
             </SafeAreaView>
             <BottomSheetModalProvider>
                 <View style={styles.container}>
                     <BottomSheetModal
+                        backgroundComponent={CustomBackground}
                         ref={bottomSheetModalRef}
                         index={1}
                         snapPoints={snapPoints}
@@ -124,18 +174,35 @@ const Home = ({ navigation }: any) => {
                         <BottomSheetScrollView
                             contentContainerStyle={styles.contentContainer}
                         >
-                            <Text style={styles.title}>{sheetTitle}</Text>
+                            <Text style={[styles.title,{color:isDarkMode?colors.white:colors.black}]}>{sheetTitle}</Text>
 
-                            {sheetTitle == '' ? (
-                                <View />
-                            ) : sheetTitle == 'Service providers' ? (
-                               <View />
+                            {sheetTitle === 'Service providers' || sheetTitle === 'Watoa Huduma' ? (
+                                providers?.map(item => (
+                                    <TouchableOpacity style={[styles.bottomView,{borderBottomColor: isDarkMode?colors.white: colors.alsoGrey}]}
+                                        onPress={() => {
+                                            navigation.navigate('Provider Details', {
+                                                provider: item
+                                            })
+                                        }}
+                                    >
+                                        <Text style={{ color: isDarkMode?colors.black:colors.primary,fontWeight:'bold',fontSize:16 }}>{item.name}</Text>
+                                        <Text style={{ paddingVertical: 10, color: isDarkMode?colors.white:colors.black}}>{item.user.phone}</Text>
+
+                                    </TouchableOpacity>
+                                ))
+
                             ) : (
-                         
-                              <View />
-
-                            )
-                            }
+                                clients?.map(item => (
+                                    <TouchableOpacity style={[styles.bottomView,{borderBottomColor: isDarkMode?colors.white: colors.alsoGrey}]}
+                                        onPress={() => navigation.navigate('Client Details', {
+                                            client: item
+                                        })}
+                                    >
+                                        <Text style={{ color: isDarkMode?colors.black:colors.primary,fontWeight:'bold',fontSize:16 }}>{item?.name}</Text>
+                                        <Text style={{ paddingVertical: 10, color: isDarkMode?colors.white:colors.black}}>{item?.user.phone}</Text>
+                                    </TouchableOpacity>
+                                ))
+                            )}
                         </BottomSheetScrollView>
                     </BottomSheetModal>
                 </View>
@@ -154,10 +221,17 @@ const styles = StyleSheet.create({
     contentContainer: {
         marginHorizontal: 10
     },
+    chart: {
+        alignItems: 'center',
+        marginVertical: 8,
+        borderRadius: 20,
+        backgroundColor: colors.white
+    },
     title: {
         alignSelf: 'center',
         fontSize: 15,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+       
     },
     listView: {
         marginHorizontal: 5,
@@ -184,7 +258,32 @@ const styles = StyleSheet.create({
     },
     badgeText: {
         color: colors.white
-    }
+    },
+    textContainer: {
+        paddingVertical: 5,
+        margin: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.alsoGrey
+    },
+    categoryService: {
+        textTransform: 'uppercase',
+        color: colors.secondary
+    },
+    service: {
+        paddingTop: 5
+    },
+    subservice: {
+        paddingTop: 5,
+        fontWeight: 'bold',
+        color: colors.black
+    },
+
+    bottomView: {
+        paddingVertical: 5,
+        margin: 5,
+        borderBottomWidth: 0.5
+        
+    },
 })
 
 export default Home

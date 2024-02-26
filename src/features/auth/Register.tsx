@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/Feather';
 
 import { useForm, Controller } from 'react-hook-form';
 import { RootStateOrAny, useSelector } from 'react-redux';
-import { userRegiter } from './userSlice';
+import { setFirstTime, userRegiter } from './userSlice';
 import { globalStyles } from '../../styles/global';
 import { useTogglePasswordVisibility } from '../../hooks/useTogglePasswordVisibility';
 import PhoneInput from 'react-native-phone-number-input';
@@ -25,11 +25,15 @@ import { TextInputField } from '../../components/TextInputField';
 import { useAppDispatch } from '../../app/store';
 import Button from '../../components/Button';
 import { ButtonText } from '../../components/ButtonText';
+import { useTranslation } from 'react-i18next';
+import { formatErrorMessages, showErrorWithLineBreaks, validateNIDANumber } from '../../utils/utilts';
 
 const RegisterScreen = ({ route, navigation }: any) => {
 
   const dispatch = useAppDispatch();
-  const { user, loading, status } = useSelector(
+  const { t } = useTranslation();
+
+  const { user, loading, status,isFirstTimeUser } = useSelector(
     (state: RootStateOrAny) => state.user,
   );
 
@@ -39,6 +43,8 @@ const RegisterScreen = ({ route, navigation }: any) => {
   const phoneInput = useRef<PhoneInput>(null);
 
   const [message, setMessage] = useState('');
+  const [nidaError, setNidaError] = useState('');
+  const [nidaLoading,setNidaLoading]=useState(false)
 
 
 
@@ -54,11 +60,18 @@ const RegisterScreen = ({ route, navigation }: any) => {
     return result;
   }
 
+  // useEffect(() => {
+  //   if (status !== '') {
+  //     setMessage(status);
+  //   }
+  // }, [status]);
+
+
   useEffect(() => {
-    if (status !== '') {
-      setMessage(status);
+    if(isFirstTimeUser){
+        dispatch(setFirstTime(false))
     }
-  }, [status]);
+  }, []);
 
   const {
     control,
@@ -68,7 +81,8 @@ const RegisterScreen = ({ route, navigation }: any) => {
     defaultValues: {
       phone: '',
       password: '',
-      name: '',
+      first_name:'',
+      last_name:'',
       nida: '',
     },
   });
@@ -83,52 +97,74 @@ const RegisterScreen = ({ route, navigation }: any) => {
   };
 
   const onSubmit = async (data: any) => {
-   
+     data.app_type='agent';
+
+     setNidaLoading(true)
+     const nidaValidationResult = await validateNIDANumber(data.nida);
+     setNidaLoading(false)
+
+
+     if (!nidaValidationResult.obj.error|| nidaValidationResult.obj.error.trim() === '') {
+    
     dispatch(userRegiter(data))
     .unwrap()
     .then(result => {
       console.log('resultsss', result);
       if (result.status) {
-        console.log('excuted this true block')
-        ToastAndroid.show("User created successfuly!", ToastAndroid.SHORT);
-
-        navigation.navigate('Login', {
-          screen: 'Login',
-          message: message
-        });
+     
+        ToastAndroid.show(`${t('auth:userCreatedSuccessfully')}`, ToastAndroid.LONG);
+        navigation.navigate('Verify',{nextPage:'Verify'});
+      } else {
+        console.log('datatataat',result.error)
+        if (result.error) {
+          setDisappearMessage(result.error
+          );
+      } else {
+          setDisappearMessage(result.message);
+      }
       } 
 
    
     })
 
+  }else{
+    setNidaError(t('auth:nidaDoesNotExist'))
+    console.log('NIDA validation failed:', nidaValidationResult.error);
   }
+
+  }
+
+  const { isDarkMode } = useSelector(
+    (state: RootStateOrAny) => state.theme,
+  );
+  
+
+  const stylesGlobal = globalStyles();
 
   return (
 
-    <SafeAreaView>
+    <SafeAreaView style={stylesGlobal.scrollBg}>
       <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <Container>
-          <View style={globalStyles.centerView}>
-            <Image
-              source={require('./../../../assets/images/logo.png')}
-              style={globalStyles.verticalLogo}
+      
+          <View style={stylesGlobal.centerView}>
+          <Image
+              source={isDarkMode? require('./../../../assets/images/logo-white.png'): require('./../../../assets/images/logo.png')}
+              style={[stylesGlobal.verticalLogo,{height:100,marginTop:30}]}
             />
           </View>
+          
           <View>
-            <Text style={globalStyles.largeHeading}>Register</Text>
-          </View>
-          <View>
-            <BasicView style={globalStyles.centerView}>
-              <Text style={globalStyles.errorMessage}>{message}</Text>
+            <BasicView style={stylesGlobal.centerView}>
+              <Text style={stylesGlobal.errorMessage}>{message}</Text>
             </BasicView>
 
             <BasicView>
               <Text
                 style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop10,
+                  stylesGlobal.inputFieldTitle,
+                  stylesGlobal.marginTop10,
                 ]}>
-                Phone
+                {t('auth:phone')}
               </Text>
               <Controller
                 control={control}
@@ -138,7 +174,7 @@ const RegisterScreen = ({ route, navigation }: any) => {
                 render={({ field: { onChange, onBlur, value } }) => (
                   <PhoneInput
                     ref={phoneInput}
-                    placeholder="672 127 313"
+                    placeholder="714 055 666"
                     defaultValue={value}
                     defaultCode="TZ"
                     countryPickerProps={{
@@ -152,9 +188,9 @@ const RegisterScreen = ({ route, navigation }: any) => {
                     withDarkTheme
                     withShadow
                     autoFocus
-                    containerStyle={globalStyles.phoneInputContainer}
-                    textContainerStyle={globalStyles.phoneInputTextContainer}
-                    textInputStyle={globalStyles.phoneInputField}
+                    containerStyle={stylesGlobal.phoneInputContainer}
+                    textContainerStyle={stylesGlobal.phoneInputTextContainer}
+                    textInputStyle={stylesGlobal.phoneInputField}
                     textInputProps={{
                       maxLength: 9,
                     }}
@@ -163,8 +199,8 @@ const RegisterScreen = ({ route, navigation }: any) => {
                 name="phone"
               />
               {errors.phone && (
-                <Text style={globalStyles.errorMessage}>
-                  Phone number is required.
+                <Text style={stylesGlobal.errorMessage}>
+                  {t('auth:phoneRequired')}
                 </Text>
               )}
             </BasicView>
@@ -172,32 +208,31 @@ const RegisterScreen = ({ route, navigation }: any) => {
             <BasicView>
               <Text
                 style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop20,
+                  stylesGlobal.inputFieldTitle,
+                  stylesGlobal.marginTop20,
                 ]}>
-               Name
+               {t('auth:firstName')}
               </Text>
 
               <Controller
                 control={control}
                 rules={{
-                  maxLength: 12,
                   required: true,
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInputField
-                    placeholder="Name"
+                    placeholder= {t('auth:enterFirstName')}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
                   />
                 )}
-                name="name"
+                name="first_name"
               />
 
-              {errors.name && (
-                <Text style={globalStyles.errorMessage}>
-                  Name is required
+              {errors.first_name && (
+                <Text style={stylesGlobal.errorMessage}>
+                  {t('auth:firstNameRequired')}
                 </Text>
               )}
             </BasicView>
@@ -205,50 +240,97 @@ const RegisterScreen = ({ route, navigation }: any) => {
             <BasicView>
               <Text
                 style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop20,
+                  stylesGlobal.inputFieldTitle,
+                  stylesGlobal.marginTop20,
                 ]}>
-                NIDA number
+               {t('auth:lastName')}
               </Text>
 
               <Controller
                 control={control}
                 rules={{
-                  maxLength: 12,
                   required: true,
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInputField
-                    placeholder="Enter Nida number"
+                    placeholder= {t('auth:enterLastName')}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
                   />
                 )}
-                name="nida_number"
+                name="last_name"
               />
 
+              {errors.last_name && (
+                <Text style={stylesGlobal.errorMessage}>
+                  {t('auth:lastNameRequired')}
+                </Text>
+              )}
             </BasicView>
 
             <BasicView>
               <Text
                 style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop20,
+                  stylesGlobal.inputFieldTitle,
+                  stylesGlobal.marginTop20,
                 ]}>
-                Password
+                {t('auth:nida')}
               </Text>
 
-              <View style={globalStyles.passwordInputContainer}>
+         
+              <Controller
+                control={control}
+                rules={{
+                  required: true,
+                  validate: (value) => {
+                    if (value.length !== 20) {
+                      setNidaError(t('auth:nida20numbers'));
+                      return false;
+                    }
+                    setNidaError('');
+                    return true;
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInputField
+                    placeholder={t('auth:enterNida')}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    keyboardType='numeric'
+                  />
+                )}
+                name="nida"
+              />
+                   {nidaError && (
+                <Text style={stylesGlobal.errorMessage}>
+                  {nidaError}
+                </Text>
+              )}
+            </BasicView>
+
+            <BasicView>
+              <Text
+                style={[
+                  stylesGlobal.inputFieldTitle,
+                  stylesGlobal.marginTop20,
+                ]}>
+               {t('auth:password')}
+              </Text>
+
+              <View style={stylesGlobal.passwordInputContainer}>
                 <Controller
                   control={control}
                   rules={{
-                    maxLength: 12,
+                 
                     required: true,
                   }}
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                      style={globalStyles.passwordInputField}
+                      style={[stylesGlobal.passwordInputField,
+                        {backgroundColor:colors.white,color:colors.black}
+                      ]}
                       secureTextEntry={passwordVisibility}
                       placeholder="Enter Password"
                       onBlur={onBlur}
@@ -264,16 +346,16 @@ const RegisterScreen = ({ route, navigation }: any) => {
                 </TouchableOpacity>
               </View>
               {errors.password && (
-                <Text style={globalStyles.errorMessage}>
-                  Password is required.
+                <Text style={stylesGlobal.errorMessage}>
+                 {t('auth:passwordRequired')}
                 </Text>
               )}
             </BasicView>
 
 
             <BasicView>
-              <Button loading={loading} onPress={handleSubmit(onSubmit)}>
-                <ButtonText>Register</ButtonText>
+              <Button loading={loading || nidaLoading} onPress={handleSubmit(onSubmit)}>
+                <ButtonText>{t('auth:register')}</ButtonText>
               </Button>
             </BasicView>
 
@@ -281,13 +363,13 @@ const RegisterScreen = ({ route, navigation }: any) => {
               onPress={() => {
                 navigation.navigate('Login');
               }}
-              style={[globalStyles.marginTop20, globalStyles.centerView]}>
-              <Text style={globalStyles.touchablePlainTextSecondary}>
-                Already have an account? Login
+              style={[stylesGlobal.marginTop20, stylesGlobal.centerView]}>
+              <Text style={stylesGlobal.touchablePlainTextSecondary}>
+              {t('auth:alreadyHaveAccount')}
               </Text>
             </TouchableOpacity>
           </View>
-        </Container>
+       
       </ScrollView>
     </SafeAreaView>
   );

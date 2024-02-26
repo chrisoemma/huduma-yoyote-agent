@@ -77,6 +77,21 @@ export const userRegiter = createAsyncThunk(
   },
 );
 
+export const changePassword = createAsyncThunk(
+  'users/changePassword',
+  async ({ data, userId }: any) => {
+    const response = await fetch(`${API_URL}/auth/change_password/${userId}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return (await response.json()) as UserData;
+  },
+);
+
 export const userVerify = createAsyncThunk(
   'users/userVerify',
   async (data: PhoneVerificationDTO) => {
@@ -90,6 +105,61 @@ export const userVerify = createAsyncThunk(
     });
     return (await response.json()) as UserData;
   },
+);
+
+export const updateProfile = createAsyncThunk(
+  'users/updateProfile',
+  async ({ data, userId }: any) => {
+    
+    try {
+      console.log('user', userId);
+      const response = await fetch(`${API_URL}/users/change_profile_picture/${userId}`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      // Handle the error gracefully, e.g., log the error and return an appropriate response
+      console.error('Error in updateProviderInfo:', error);
+      throw error; // Rethrow the error to be caught by Redux Toolkit
+    }
+  }
+);
+
+export const updateUserInfo = createAsyncThunk(
+  'users/updateUserInfo',
+  async ({ data, userType,userId }: any) => {
+    try {
+      console.log('userId', userId);
+      const response = await fetch(`${API_URL}/users/update_account/${userType}/${userId}`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      // Handle the error gracefully, e.g., log the error and return an appropriate response
+      console.error('Error in updateProviderInfo:', error);
+      throw error; // Rethrow the error to be caught by Redux Toolkit
+    }
+  }
 );
 
 export const forgotPassword = createAsyncThunk(
@@ -147,6 +217,7 @@ const userSlice = createSlice({
   initialState: {
     user: {} as UserData,
     config: {},
+    isFirstTimeUser:true,
     loading: false,
     status: '',
   },
@@ -156,6 +227,9 @@ const userSlice = createSlice({
     },
     clearMessage(state: any) {
       state.status = null;
+    },
+    setFirstTime: (state, action) => {
+      state.isFirstTimeUser = action.payload;
     },
   },
   extraReducers: builder => {
@@ -187,6 +261,36 @@ const userSlice = createSlice({
       updateStatus(state, 'Something went wrong, please try again later');
       state.loading = false;
     });
+
+
+
+      //Change password
+
+      builder.addCase(changePassword.pending, state => {
+        console.log('Pending');
+        state.loading = true;
+        updateStatus(state, '');
+      });
+      builder.addCase(changePassword.fulfilled, (state, action) => {
+        console.log('Fulfilled case');
+        console.log(action.payload);
+  
+        state.loading = false;
+        updateStatus(state, '');
+  
+        if (action.payload.status) {
+          state.user.token = action.payload.token as any;
+          updateStatus(state, '');
+        } else {
+          updateStatus(state, action.payload);
+        }
+      });
+      builder.addCase(changePassword.rejected, (state, action) => {
+        console.log('Rejected');
+        console.log(action.error);
+        state.loading = false;
+        updateStatus(state, '');
+      });
 
     //REGISTER
     builder.addCase(userRegiter.pending, state => {
@@ -296,9 +400,69 @@ const userSlice = createSlice({
       state.loading = false;
       updateStatus(state, '');
     });
+
+
+    builder.addCase(updateUserInfo.pending, (state) => {
+      console.log('Update Provider Pending');
+      state.loading = true;
+      updateStatus(state, '');
+    });
+    builder.addCase(updateUserInfo.fulfilled, (state, action) => {
+      console.log('Update Task Fulfilled');
+      console.log('dataaa1234', action.payload.data)
+
+      state.user = {
+        ...state.user,
+        ...action.payload.data.user,
+      };
+
+      // Update token if it's received in the response
+      if (action.payload.data.token) {
+        state.user.token = action.payload.data.token;
+      }
+
+      state.loading = false;
+      updateStatus(state, '');
+    });
+    builder.addCase(updateUserInfo.rejected, (state, action) => {
+      console.log('Rejected');
+      state.loading = false;
+      updateStatus(state, '');
+    });
+
+    builder.addCase(updateProfile.pending, (state) => {
+      console.log('Update Provider Pending');
+      state.loading = true;
+      updateStatus(state, '');
+    });
+
+    builder.addCase(updateProfile.fulfilled, (state, action) => {
+      console.log('Update Task Fulfilled');
+      console.log('dataaa1234', action.payload.data)
+
+      state.user = {
+        ...state.user,
+        ...action.payload.data.user,
+      };
+
+      // Update token if it's received in the response
+      if (action.payload.data.token) {
+        state.user.token = action.payload.data.token;
+      }
+
+      state.loading = false;
+      updateStatus(state, '');
+    });
+    builder.addCase(updateProfile.rejected, (state, action) => {
+      console.log('Rejected');
+      state.loading = false;
+      updateStatus(state, '');
+    });
+
   },
 });
 
-export const { userLogout, clearMessage } = userSlice.actions;
+
+export const { userLogout, clearMessage,setFirstTime } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -4,17 +4,33 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '../utils/colors';
 import RatingStars from './RatinsStars';
 import { globalStyles } from '../styles/global';
+import { useSelector,RootStateOrAny } from 'react-redux';
 
-const ProviderList = ({ navigation,onPress, iconType, service }: any) => {
+const ProviderList = ({ navigation,onPress, provider }: any) => {
+
+    const stylesGlobal=globalStyles();
+
+    const {isDarkMode} = useSelector(
+        (state: RootStateOrAny) => state.theme,
+      );
 
     return (
         <TouchableOpacity
-            onPress={()=>{}}
-            style={styles.touchableOpacityStyles}
+        onPress={()=>navigation.navigate("Provider Details",{
+            provider:provider
+        })}
+            style={[styles.touchableOpacityStyles,{backgroundColor:isDarkMode?colors.darkModeBackground:colors.white}]}
         >
-         <View style={globalStyles.circle}>
+         <View style={stylesGlobal.circle}>
          <Image
-                source={require('./../../assets/images/profile.png')}
+             
+                source={
+                    provider?.profile_img?.startsWith('https://')
+                      ? { uri: provider.profile_img }
+                      : provider?.user_img?.startsWith('https://')
+                      ? { uri: provider.user_img }
+                      : require('./../../assets/images/profile.png') // Default static image
+                  }
                 style={{
                     resizeMode: "cover",
                     width: 60,
@@ -25,15 +41,15 @@ const ProviderList = ({ navigation,onPress, iconType, service }: any) => {
             />
          </View>
          <View style={styles.divContent}>
-            <Text>Frank John</Text>
+            <Text style={{color:isDarkMode?colors.white:colors.black,marginBottom:10}}>{provider.name}</Text>
             <View style={{flexDirection:'row'}}>
-            <Ionicons name="location-outline" color={colors.primary} size={17}  />
-            <Text>Mwananyamala</Text>
+            <Ionicons name="call" color={colors.primary} size={17}  />
+            <Text style={{color:isDarkMode?colors.white:colors.black}}>{provider?.user?.phone}</Text>
             </View>
             <View style={{flexDirection:'row'}}>
         
             </View>
-            <RatingStars  rating={2}/>
+           
          </View>
         </TouchableOpacity>
     )
@@ -41,13 +57,14 @@ const ProviderList = ({ navigation,onPress, iconType, service }: any) => {
 
 const styles = StyleSheet.create({
     touchableOpacityStyles: {
-        width: '42%',
+   
         height: 200,
         borderRadius: 18,
         paddingVertical: 8,
         marginHorizontal: 5,
         marginVertical: 5,
-        backgroundColor:colors.white
+        backgroundColor:colors.white,
+        elevation:2
     },
     divContent:{
         margin:10,

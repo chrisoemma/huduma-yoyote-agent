@@ -14,49 +14,52 @@ import Icon from 'react-native-vector-icons/Feather';
 
 import { useForm, Controller } from 'react-hook-form';
 import { RootStateOrAny, useSelector } from 'react-redux';
-//import { userRegiter } from '../';
 import { globalStyles } from '../../styles/global';
-import { useTogglePasswordVisibility } from '../../hooks/useTogglePasswordVisibility';
-import PhoneInput from 'react-native-phone-number-input';
-import { colors } from '../../utils/colors';
 import { Container } from '../../components/Container';
 import { BasicView } from '../../components/BasicView';
 import { TextInputField } from '../../components/TextInputField';
 import { useAppDispatch } from '../../app/store';
 import Button from '../../components/Button';
 import { ButtonText } from '../../components/ButtonText';
+import { useTranslation } from 'react-i18next';
+import { validateTanzanianPhoneNumber } from '../../utils/utilts';
+import { createProvider, updateProvider } from './RegisterSlice';
 
 const RegisterProvider = ({ route, navigation }: any) => {
 
   const dispatch = useAppDispatch();
-  const { user, loading, status } = useSelector(
+  const { user } = useSelector(
     (state: RootStateOrAny) => state.user,
   );
 
-  const { passwordVisibility, rightIcon, handlePasswordVisibility } =
-    useTogglePasswordVisibility();
+  const { loading, status } = useSelector(
+    (state: RootStateOrAny) => state.registers,
+  );
 
-  const phoneInput = useRef<PhoneInput>(null);
+  const { t } = useTranslation();
+
+
 
   const [message, setMessage] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [provider, setProvider] = useState(null);
 
+  const {
+    control,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      phone: '',
+      first_name: '',
+      last_name: '',
+      name: '',
+      nida: '',
+      email: ''
+    },
+  });
 
-  const isEditMode = !!route.params?.editData;
-  const submitButtonText = isEditMode ? 'Update' : 'Register';
-
-
-
-  const makeid = (length: any) => {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
-    }
-    return result;
-  }
 
   useEffect(() => {
     if (status !== '') {
@@ -65,26 +68,33 @@ const RegisterProvider = ({ route, navigation }: any) => {
   }, [status]);
 
   useEffect(() => {
-    if (isEditMode && route.params?.editData) { // Check if editData is defined
-      const editData = route.params.editData;
-      // Pre-fill the form fields with editData
-      // For example: setValue('phone', editData.phone);
-      // ...
-    }
-  }, [isEditMode, route.params]);
+    const provider = route.params?.provider;
+    if (provider) {
+      setIsEditMode(true);
+      setProvider(provider)
+      setValue('first_name', provider?.first_name);
+      setValue('last_name', provider?.last_name);
+      setValue('phone', provider?.phone);
+      setValue('nida', provider?.nida)
+      setValue('email', provider?.user.email)
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      phone: '',
-      password: '',
-      name: '',
-      nida: '',
-    },
-  });
+      navigation.setOptions({
+        title: t('auth:editProvider'),
+      });
+    } else {
+      navigation.setOptions({
+        title: t('auth:registerProvider'),
+      });
+    }
+  }, [route.params]);
+
+  useEffect(() => {
+    if (status !== '') {
+      setMessage(status);
+    }
+  }, [status]);
+
+
 
   const setDisappearMessage = (message: any) => {
     setMessage(message);
@@ -96,190 +106,259 @@ const RegisterProvider = ({ route, navigation }: any) => {
 
   const onSubmit = async (data: any) => {
     if (isEditMode) {
-      // Handle editing logic
-    //  dispatch(updateUser(data)) // Replace with your Redux action
-        dispatch(data)
+      data.phone = validateTanzanianPhoneNumber(data.phone);
+      dispatch(updateProvider({ data: data, providerId: provider?.id }))
         .unwrap()
         .then(result => {
-          ToastAndroid.show("User created successfuly!", ToastAndroid.SHORT);
-          navigation.goBack();
+          console.log('resultsss', result);
+          if (result.status) {
+            console.log('excuted this true block')
+            ToastAndroid.show(`${t('screens:updatedSuccessfully')}`, ToastAndroid.SHORT);
+            navigation.navigate('MyRegisters');
+          } else {
+            setDisappearMessage(
+              `${t('screens:requestFail')}`,
+            );
+            console.log('dont navigate');
+          }
+        }).catch(rejectedValueOrSerializedError => {
+          // handle error here
+          setDisappearMessage(
+            `${t('screens:requestFail')}`,
+          );
+          console.log(rejectedValueOrSerializedError);
         });
     } else {
-      // Handle adding logic
-      //dispatch(addUser(data)) // Replace with your Redux action
-      dispatch(data)
-      .unwrap()
+      data.phone = validateTanzanianPhoneNumber(data.phone);
+      dispatch(createProvider({ data: data, agentId: user.agent.id }))
+        .unwrap()
         .then(result => {
-          ToastAndroid.show("User created successfuly!", ToastAndroid.SHORT);
-          navigation.navigate('Login', {
-            screen: 'Login',
-            message: message
-          });
+          console.log('resultsss', result);
+          if (result.status) {
+            console.log('excuted this true block')
+            ToastAndroid.show("User created successfuly!", ToastAndroid.SHORT);
+            navigation.navigate('MyRegisters');
+          } else {
+            setDisappearMessage(
+              `${t('screens:requestFail')}`,
+            );
+            console.log('dont navigate');
+          }
+
+        }).catch(rejectedValueOrSerializedError => {
+          // handle error here
+          setDisappearMessage(
+            `${t('screens:requestFail')}`,
+          );
+          console.log(rejectedValueOrSerializedError);
         });
+
     }
-  };
+
+  }
+
+  const stylesGlobal = globalStyles();
 
   return (
 
     <SafeAreaView>
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <Container>
-         
-          <View>
-            <BasicView style={globalStyles.centerView}>
-              <Text style={globalStyles.errorMessage}>{message}</Text>
-            </BasicView>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" 
+        style={stylesGlobal.scrollBg}
+      >
+        <View>
+          <BasicView style={stylesGlobal.centerView}>
+            <Text style={stylesGlobal.errorMessage}>{message}</Text>
+          </BasicView>
 
-            <BasicView>
-              <Text
-                style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop10,
-                ]}>
-                Phone
-              </Text>
-              <Controller
-                control={control}
-                rules={{
-                  required: true,
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <PhoneInput
-                    ref={phoneInput}
-                    placeholder="672 127 313"
-                    defaultValue={value}
-                    defaultCode="TZ"
-                    countryPickerProps={{
-                      countryCodes: ['TZ', 'KE', 'UG', 'RW', 'BI'],
-                    }}
-                    layout="first"
-                    // onChangeText={}
-                    onChangeFormattedText={text => {
-                      onChange(text);
-                    }}
-                    withDarkTheme
-                    withShadow
-                    autoFocus
-                    containerStyle={globalStyles.phoneInputContainer}
-                    textContainerStyle={globalStyles.phoneInputTextContainer}
-                    textInputStyle={globalStyles.phoneInputField}
-                    textInputProps={{
-                      maxLength: 9,
-                    }}
-                  />
-                )}
-                name="phone"
-              />
-              {errors.phone && (
-                <Text style={globalStyles.errorMessage}>
-                  Phone number is required.
-                </Text>
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:firstName')}
+            </Text>
+
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                  placeholder={t('auth:enterFirstName')}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
               )}
-            </BasicView>
+              name="first_name"
+            />
 
-            
-            <BasicView>
-              <Text
-                style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop20,
-                ]}>
-               Email
+            {errors.first_name && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:firstNameRequired')}
               </Text>
+            )}
+          </BasicView>
 
-              <Controller
-                control={control}
-                rules={{
-                  maxLength: 12,
-                  required: true,
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInputField
-                    placeholder="Email"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                )}
-                name="email"
-              />
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:lastName')}
+            </Text>
 
-              {errors.email && (
-                <Text style={globalStyles.errorMessage}>
-                  Email is required
-                </Text>
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                  placeholder={t('auth:enterLastName')}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
               )}
-            </BasicView>
+              name="last_name"
+            />
 
-            <BasicView>
-              <Text
-                style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop20,
-                ]}>
-               Name
+            {errors.last_name && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:lastNameRequired')}
               </Text>
+            )}
+          </BasicView>
 
-              <Controller
-                control={control}
-                rules={{
-                  maxLength: 12,
-                  required: true,
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInputField
-                    placeholder="Name"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                )}
-                name="name"
-              />
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:phone')}
+            </Text>
 
-              {errors.name && (
-                <Text style={globalStyles.errorMessage}>
-                  Name is required
-                </Text>
+            <Controller
+              control={control}
+              rules={{
+                minLength: 10,
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                  placeholder={t('screens:enterPhone')}
+                  onBlur={onBlur}
+                  onChangeText={(text) => {
+                    // Remove any non-numeric characters
+                    const cleanedText = text.replace(/\D/g, '');
+
+                    // Check if it starts with '0' or '+255'/'255'
+                    if (cleanedText.startsWith('0') && cleanedText.length <= 10) {
+                      onChange(cleanedText);
+                    } else if (
+                      (cleanedText.startsWith('255') ||
+                        cleanedText.startsWith('+255')) &&
+                      cleanedText.length <= 12
+                    ) {
+                      onChange(cleanedText);
+                    }
+                  }}
+                  value={value}
+                  keyboardType='numeric'
+                  maxLength={12}
+
+                />
               )}
-            </BasicView>
-
-            <BasicView>
-              <Text
-                style={[
-                  globalStyles.inputFieldTitle,
-                  globalStyles.marginTop20,
-                ]}>
-                NIDA number
+              name="phone"
+            />
+            {errors.phone && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:phoneRequired')}
               </Text>
+            )}
+          </BasicView>
 
-              <Controller
-                control={control}
-                rules={{
-                  maxLength: 12,
-                  required: true,
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInputField
-                    placeholder="Enter Nida number"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                )}
-                name="nida_number"
-              />
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:email')}
+            </Text>
 
-            </BasicView>
-            <BasicView>
-              <Button loading={loading} onPress={handleSubmit(onSubmit)}>
-                <ButtonText>Register</ButtonText>
-              </Button>
-            </BasicView>
+            <Controller
+              control={control}
+              rules={{
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, // Regular expression for email validation
+                  message: 'Invalid email address',
+                },
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                  placeholder={t('auth:enterEmail')}
+                  onBlur={onBlur}
+                  keyboardType='email-address'
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name="email"
+            />
+            {errors.email && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:emailRequired')}
+              </Text>
+            )}
+          </BasicView>
 
-          
-          </View>
-        </Container>
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:nida')}
+            </Text>
+
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+                minLength: 20, maxLength: 20
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                  placeholder={t('auth:enterNida')}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType='numeric'
+                />
+              )}
+              name="nida"
+            />
+
+            {errors.nida && errors.nida.type === 'minLength' && (
+              <Text style={{ color: 'red' }}>{t('auth:nida20')}</Text>
+            )}
+
+          </BasicView>
+          <BasicView>
+            <Button loading={loading} onPress={handleSubmit(onSubmit)}>
+              <ButtonText>{isEditMode ? `${t('auth:editProvider')}` : `${t('auth:registerProvider')}`}</ButtonText>
+            </Button>
+          </BasicView>
+
+
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
