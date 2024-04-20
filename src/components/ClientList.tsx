@@ -20,7 +20,8 @@ const ClientList = ({ navigation,onPress, client }: any) => {
                 client:client
             })}
             style={[styles.touchableOpacityStyles,{backgroundColor:isDarkMode?colors.darkModeBackground:colors.white}]}
-        >
+          key={client?.id}
+       >
          <View style={stylesGlobal.circle}>
          <Image
                   source={

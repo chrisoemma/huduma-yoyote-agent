@@ -12,6 +12,7 @@ import { useAppDispatch } from '../../app/store';
 import { BasicView } from '../../components/BasicView';
 import { deleteProvider } from './RegisterSlice';
 import { useSelector } from 'react-redux';
+import Iconions from 'react-native-vector-icons/Ionicons';
 
 
 const ProviderDetails = ({ route, navigation }: any) => {
@@ -36,7 +37,9 @@ const ProviderDetails = ({ route, navigation }: any) => {
     (state: RootStateOrAny) => state.theme,
   );
 
-
+  const { selectedLanguage } = useSelector(
+    (state: RootStateOrAny) => state.language,
+  );
 
   const setDisappearMessage = (message: any) => {
     setMessage(message);
@@ -136,8 +139,21 @@ const ProviderDetails = ({ route, navigation }: any) => {
           />
         </View>
         <Text style={{ color: colors.secondary, fontWeight: 'bold', alignSelf: 'center' }}>{provider.name}</Text>
-        <View>
-          <TouchableOpacity style={{ flexDirection: 'row', margin: 10 }}
+        <View style={{marginLeft:10}}>
+        <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('screens:profession')}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
+            onPress={()=>{}}
+          >
+            
+            <Icon
+              name="idcard"
+              color={isDarkMode ? colors.white : colors.black}
+              size={25}
+            />
+            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{selectedLanguage =='en'?provider?.designation?.name?.en:provider?.designation?.name?.sw}</Text>
+          </TouchableOpacity>
+          <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:phone')}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={() => makePhoneCall(phoneNumber)}
           >
             <Icon
@@ -145,26 +161,28 @@ const ProviderDetails = ({ route, navigation }: any) => {
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.black }}>{provider.user.phone}</Text>
+            <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{provider.user.phone}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', margin: 10 }}
-          >
+          <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:email')}:</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
             <Icon
               name="mail"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.black }}>{provider.user.email}</Text>
+            {provider?.user?.email==null?(<Text  style={{color: isDarkMode ? colors.white : colors.alsoGrey}}> {t('screens:noEmail')}</Text>):(<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{provider?.user?.email}</Text>)
+            }
           </TouchableOpacity>
+          <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:nida')}</Text>
 
-          <TouchableOpacity style={{ flexDirection: 'row', margin: 10 }}
+          <TouchableOpacity style={{ flexDirection: 'row' }}
           >
             <Icon
               name="infocirlce"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.black }}>{provider?.nida}</Text>
+             <Text style={{color: isDarkMode ? colors.white : colors.black }}>{provider?.nida}</Text>
           </TouchableOpacity>
         </View>
 

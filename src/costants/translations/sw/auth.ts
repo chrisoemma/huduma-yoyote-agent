@@ -48,7 +48,12 @@ export default {
     nidaRequired: 'Nambari ya NIDA inahitajika',
     nida20numbers: 'Nambari ya NIDA lazima iwe na herufi 20',
     nidaDoesNotExist:'Namba ya NIDA haipo',
-    enterEmail:'Ingiza barua pepe'
+    enterEmail:'Ingiza barua pepe',
+    confirmPassword:'Thibitisha Neno siri',
+    passwordMismatch:'Neno siri aliendani',
+    designationError:'Tafadhali, changua Taaluma yako',
+    emailRequired:'Barua pepe sahihi inahitajika',
+    nidaEmptyError:'Namba ya NIDA inahitajika'
 
 
 }

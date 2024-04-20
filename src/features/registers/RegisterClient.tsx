@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { createClient, updateClient } from './RegisterSlice';
 import { validateTanzanianPhoneNumber } from '../../utils/utilts';
 
+
 const RegisterClient = ({ route, navigation }: any) => {
 
   const dispatch = useAppDispatch();
@@ -61,20 +62,25 @@ const RegisterClient = ({ route, navigation }: any) => {
     defaultValues: {
       phone: '',
       name: '',
-      nida: '',
+  
     },
   });
+
+
+
+
 
 
 
   useEffect(() => {
     const client = route.params?.client;
     if (client) {
+      const cleanedPhone = client?.user?.phone?.replace(/\+/g, '');
       setIsEditMode(true);
       setClient(client)
       setValue('name', client?.name);
-      setValue('phone', client?.user.phone);
-      setValue('nida', client.nida)
+      setValue('phone', cleanedPhone);
+      
 
       navigation.setOptions({
         title: t('auth:editClient'),
@@ -86,30 +92,19 @@ const RegisterClient = ({ route, navigation }: any) => {
     }
   }, [route.params]);
 
-  useEffect(() => {
-    if (status !== '') {
-      setMessage(status);
-    }
-  }, [status]);
-
-
-
-
   const setDisappearMessage = (message: any) => {
     setMessage(message);
 
     setTimeout(() => {
       setMessage('');
-    }, 5000);
+    }, 10000);
   };
 
   const onSubmit = async (data: any) => {
 
 
     if (isEditMode) {
-       
-      const phone = validateTanzanianPhoneNumber(data.phone);
-
+        const phone = validateTanzanianPhoneNumber(data.phone);
         data.phone = phone;
 
       dispatch(updateClient({ data: data, clientId: client?.id }))
@@ -120,6 +115,14 @@ const RegisterClient = ({ route, navigation }: any) => {
             console.log('excuted this true block')
             ToastAndroid.show(`${t('screens:updatedSuccessfully')}`, ToastAndroid.LONG);
             navigation.navigate('MyRegisters');
+          }else{
+            if (result.error) {
+              setDisappearMessage(result.error
+              );
+            } else {
+              setDisappearMessage(result.message);
+            }
+          
           }
         })
 
@@ -133,6 +136,13 @@ const RegisterClient = ({ route, navigation }: any) => {
             console.log('excuted this true block')
             ToastAndroid.show(`${t('screens:createdSuccessfully')}`, ToastAndroid.SHORT);
             navigation.navigate('MyRegisters');
+          }else{
+            if (result.error) {
+              setDisappearMessage(result.error
+              );
+            } else {
+              setDisappearMessage(result.message);
+            }
           }
         })
 
@@ -144,13 +154,12 @@ const RegisterClient = ({ route, navigation }: any) => {
   return (
 
     <SafeAreaView style={stylesGlobal.scrollBg}>
+    
       <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <View>
-          <BasicView style={stylesGlobal.centerView}>
+        <View style={{marginTop:20}}>
+          <BasicView style={[stylesGlobal.centerView]}>
             <Text style={stylesGlobal.errorMessage}>{message}</Text>
           </BasicView>
-
-
 
           <BasicView>
             <Text
@@ -168,6 +177,7 @@ const RegisterClient = ({ route, navigation }: any) => {
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInputField
+                placeholderTextColor={colors.alsoGrey}
                   placeholder={t('auth:enterName')}
                   onBlur={onBlur}
                   onChangeText={onChange}
@@ -185,89 +195,59 @@ const RegisterClient = ({ route, navigation }: any) => {
           </BasicView>
 
           <BasicView>
-            <Text
-              style={[
-                stylesGlobal.inputFieldTitle,
-                stylesGlobal.marginTop20,
-              ]}>
-              {t('auth:phone')}
-            </Text>
-
-            <Controller
-              control={control}
-              rules={{
-                minLength: 10,
-                required: true,
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInputField
-                  placeholder={t('screens:enterPhone')}
-                  onBlur={onBlur}
-                  onChangeText={(text) => {
-                    // Remove any non-numeric characters
-                    const cleanedText = text.replace(/\D/g, '');
-
-                    // Check if it starts with '0' or '+255'/'255'
-                    if (cleanedText.startsWith('0') && cleanedText.length <= 10) {
-                      onChange(cleanedText);
-                    } else if (
-                      (cleanedText.startsWith('255') ||
-                        cleanedText.startsWith('+255')) &&
-                      cleanedText.length <= 12
-                    ) {
-                      onChange(cleanedText);
-                      console.log('this block is doen')
-                      setError('phone', { type: 'manual', message: 'Please enter a valid phone number' });
-                    }
-                  }}
-                  value={value}
-                  keyboardType='numeric'
-                  
-
-                />
-              )}
-              name="phone"
-            />
-            {errors.phone && (
-              <Text style={stylesGlobal.errorMessage}>
-                {t('auth:phoneRequired')}
+              <Text
+                style={[
+                  stylesGlobal.inputFieldTitle,
+                  stylesGlobal.marginTop20,
+                ]}>
+                  {t('auth:phone')}
               </Text>
-            )}
-          </BasicView>
 
-          <BasicView>
-            <Text
-              style={[
-                stylesGlobal.inputFieldTitle,
-                stylesGlobal.marginTop20,
-              ]}>
-              {t('auth:nida')}
-            </Text>
-
-            <Controller
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInputField
-                  placeholder={t('auth:enterNida')}
-                  onBlur={onBlur}
-                  keyboardType='numeric'
-                  onChangeText={onChange}
-                  value={value}
-                  maxLength={20}
-                />
+              <Controller
+                control={control}
+                rules={{
+                  minLength:10,
+                  required: true,
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInputField
+                  placeholderTextColor={colors.alsoGrey}
+                     placeholder= {t('screens:enterPhone')}
+                    onBlur={onBlur}
+                    onChangeText={(text) => {
+                      // Remove any non-numeric characters
+                      const cleanedText = text.replace(/\D/g, '');
+                
+                      // Check if it starts with '0' or '+255'/'255'
+                      if (cleanedText.startsWith('0') && cleanedText.length <= 10) {
+                        onChange(cleanedText);
+                      } else if (
+                        (cleanedText.startsWith('255') ||
+                          cleanedText.startsWith('+255')) &&
+                        cleanedText.length <= 12
+                      ) {
+                        onChange(cleanedText);
+                      }
+                    }}
+                    value={value}
+                    keyboardType="phone-pad"
+                    maxLength={12} 
+                 
+                  />
+                )}
+                name="phone"
+              />
+              {errors.phone && (
+                <Text style={stylesGlobal.errorMessage}>
+                  {t('auth:phoneRequired')}
+                </Text>
               )}
-              name="nida"
-            />
-
-          </BasicView>
-
+            </BasicView>
           <BasicView>
             <Button loading={loading} onPress={handleSubmit(onSubmit)}>
               <ButtonText>{isEditMode ? `${t('auth:editClient')}` : `${t('auth:registerClient')}`}</ButtonText>
             </Button>
           </BasicView>
-
-
         </View>
 
       </ScrollView>

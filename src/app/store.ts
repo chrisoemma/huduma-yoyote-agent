@@ -19,6 +19,8 @@ import languageSlice from '../costants/languageSlice';
 import ThemeSlice from '../features/settings/ThemeSlice';
 import ChartSlice from '../features/home/ChartSlice';
 import CommissionSlice from '../features/commissions/CommissionSlice';
+import AccountSlice from '../features/account/AccountSlice';
+import professionsSlice from '../features/professionsSlice';
 
 
 
@@ -29,7 +31,9 @@ const reducers = combineReducers({
   language:languageSlice,
   theme:ThemeSlice,
   charts:ChartSlice,
-  commissions:CommissionSlice
+  commissions:CommissionSlice,
+  account:AccountSlice,
+  professions:professionsSlice
 });
 
 const persistConfig = {

@@ -26,6 +26,7 @@ import { useAppDispatch } from '../../app/store';
 import Button from '../../components/Button';
 import { ButtonText } from '../../components/ButtonText';
 import { useTranslation } from 'react-i18next';
+import ToastMessage from '../../components/ToastMessage';
 import { formatErrorMessages, showErrorWithLineBreaks, validateNIDANumber } from '../../utils/utilts';
 
 const RegisterScreen = ({ route, navigation }: any) => {
@@ -33,7 +34,7 @@ const RegisterScreen = ({ route, navigation }: any) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
-  const { user, loading, status,isFirstTimeUser } = useSelector(
+  const { user, loading, status, isFirstTimeUser } = useSelector(
     (state: RootStateOrAny) => state.user,
   );
 
@@ -44,7 +45,9 @@ const RegisterScreen = ({ route, navigation }: any) => {
 
   const [message, setMessage] = useState('');
   const [nidaError, setNidaError] = useState('');
-  const [nidaLoading,setNidaLoading]=useState(false)
+  const [nidaLoading, setNidaLoading] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmError, setConfirmError] = useState('');
 
 
 
@@ -68,8 +71,8 @@ const RegisterScreen = ({ route, navigation }: any) => {
 
 
   useEffect(() => {
-    if(isFirstTimeUser){
-        dispatch(setFirstTime(false))
+    if (isFirstTimeUser) {
+      dispatch(setFirstTime(false))
     }
   }, []);
 
@@ -81,9 +84,10 @@ const RegisterScreen = ({ route, navigation }: any) => {
     defaultValues: {
       phone: '',
       password: '',
-      first_name:'',
-      last_name:'',
+      first_name: '',
+      last_name: '',
       nida: '',
+      confirmPassword: '',
     },
   });
 
@@ -96,280 +100,367 @@ const RegisterScreen = ({ route, navigation }: any) => {
     }, 5000);
   };
 
+  const [toastMessage, setToastMessage] = useState(''); 
+  const [showToast, setShowToast] = useState(false);
+
+  
+  const toggleToast = () => {
+    setShowToast(!showToast);
+  };
+  const showToastMessage = (message) => {
+    setToastMessage(message);
+    toggleToast();
+    setTimeout(() => {
+      toggleToast(); 
+    }, 5000); 
+  };
+
   const onSubmit = async (data: any) => {
-     data.app_type='agent';
+    data.app_type = 'agent';
 
-     setNidaLoading(true)
-     const nidaValidationResult = await validateNIDANumber(data.nida);
-     setNidaLoading(false)
+    setShowToast(false)
+
+    if (data.password !== data.confirmPassword) {
+      setConfirmError(t('auth:passwordMismatch'));
+      setShowToast(true)
+      showToastMessage(t('screens:errorOccured'));
+      return;
+    } else {
+      setConfirmError('');
+    }
 
 
-     if (!nidaValidationResult.obj.error|| nidaValidationResult.obj.error.trim() === '') {
-    
-    dispatch(userRegiter(data))
-    .unwrap()
-    .then(result => {
-      console.log('resultsss', result);
-      if (result.status) {
-     
-        ToastAndroid.show(`${t('auth:userCreatedSuccessfully')}`, ToastAndroid.LONG);
-        navigation.navigate('Verify',{nextPage:'Verify'});
-      } else {
-        console.log('datatataat',result.error)
-        if (result.error) {
-          setDisappearMessage(result.error
-          );
-      } else {
-          setDisappearMessage(result.message);
-      }
-      } 
+    setNidaLoading(true)
+    const nidaValidationResult = await validateNIDANumber(data.nida);
+    setNidaLoading(false)
 
-   
-    })
+    if (!nidaValidationResult.obj.error || nidaValidationResult.obj.error.trim() === '') {
+      setShowToast(false)
+      dispatch(userRegiter(data))
+        .unwrap()
+        .then(result => {
+          console.log('resultsss', result);
+          if (result.status) {
 
-  }else{
-    setNidaError(t('auth:nidaDoesNotExist'))
-    console.log('NIDA validation failed:', nidaValidationResult.error);
-  }
+            ToastAndroid.show(`${t('auth:userCreatedSuccessfully')}`, ToastAndroid.LONG);
+            navigation.navigate('Verify', { nextPage: 'Verify' });
+          } else {
+         
+            if (result.error) {
+              setDisappearMessage(result.error
+              );
+              setShowToast(true)
+              showToastMessage(t('screens:errorOccured'));
+            } else {
+              if(result.message){
+                setDisappearMessage(result.message);
+              }
+              setDisappearMessage("Something is not right please contact administartor");
+              setShowToast(true)
+              showToastMessage(t('screens:errorOccured'));
+            }
+          }
+        })
+    } else {
+      setNidaError(t('auth:nidaDoesNotExist'))
+      setShowToast(true)
+      showToastMessage(t('screens:errorOccured'));
+    }
 
   }
 
   const { isDarkMode } = useSelector(
     (state: RootStateOrAny) => state.theme,
   );
-  
+
 
   const stylesGlobal = globalStyles();
 
   return (
 
     <SafeAreaView style={stylesGlobal.scrollBg}>
+        {showToast && <ToastMessage message={toastMessage} onClose={toggleToast} />}
       <ScrollView contentInsetAdjustmentBehavior="automatic">
-      
-          <View style={stylesGlobal.centerView}>
-          <Image
-              source={isDarkMode? require('./../../../assets/images/logo-white.png'): require('./../../../assets/images/logo.png')}
-              style={[stylesGlobal.verticalLogo,{height:100,marginTop:30}]}
-            />
-          </View>
-          
-          <View>
-            <BasicView style={stylesGlobal.centerView}>
-              <Text style={stylesGlobal.errorMessage}>{message}</Text>
-            </BasicView>
 
-            <BasicView>
-              <Text
-                style={[
-                  stylesGlobal.inputFieldTitle,
-                  stylesGlobal.marginTop10,
-                ]}>
-                {t('auth:phone')}
+        <View style={stylesGlobal.centerView}>
+          <Image
+            source={isDarkMode ? require('./../../../assets/images/logo-white.png') : require('./../../../assets/images/logo.png')}
+            style={[stylesGlobal.verticalLogo, { height: 100, marginTop: 30 }]}
+          />
+        </View>
+
+        <View>
+          <BasicView style={stylesGlobal.centerView}>
+            <Text style={stylesGlobal.errorMessage}>{message}</Text>
+          </BasicView>
+
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop10,
+              ]}>
+              {t('auth:phone')}
+            </Text>
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <PhoneInput
+                  ref={phoneInput}
+                  placeholder="714 055 666"
+                  defaultValue={value}
+                  defaultCode="TZ"
+                  countryPickerProps={{
+                    countryCodes: ['TZ', 'KE', 'UG', 'RW', 'BI'],
+                  }}
+                  layout="first"
+                  // onChangeText={}
+                  onChangeFormattedText={text => {
+                    onChange(text);
+                  }}
+                  withDarkTheme
+                  withShadow
+                  autoFocus
+                  containerStyle={stylesGlobal.phoneInputContainer}
+                  textContainerStyle={stylesGlobal.phoneInputTextContainer}
+                  textInputStyle={stylesGlobal.phoneInputField}
+                  textInputProps={{
+                    maxLength: 9,
+                  }}
+                />
+              )}
+              name="phone"
+            />
+            {errors.phone && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:phoneRequired')}
               </Text>
+            )}
+          </BasicView>
+
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:firstName')}
+            </Text>
+
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                placeholderTextColor={colors.alsoGrey}
+                  placeholder={t('auth:enterFirstName')}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name="first_name"
+            />
+
+            {errors.first_name && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:firstNameRequired')}
+              </Text>
+            )}
+          </BasicView>
+
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:lastName')}
+            </Text>
+
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                placeholderTextColor={colors.alsoGrey}
+                  placeholder={t('auth:enterLastName')}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name="last_name"
+            />
+
+            {errors.last_name && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:lastNameRequired')}
+              </Text>
+            )}
+          </BasicView>
+
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:nida')}
+            </Text>
+
+
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+                validate: (value) => {
+                  if (value.length !== 20) {
+                    setNidaError(t('auth:nida20numbers'));
+                    return false;
+                  }
+                  setNidaError('');
+                  return true;
+                },
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                placeholderTextColor={colors.alsoGrey}
+                  placeholder={t('auth:enterNida')}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType='numeric'
+                />
+              )}
+              name="nida"
+            />
+             {errors.nida && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:nidaEmptyError')}
+              </Text>
+            )}
+            {nidaError && (
+              <Text style={stylesGlobal.errorMessage}>
+                {nidaError}
+              </Text>
+            )}
+          </BasicView>
+
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:password')}
+            </Text>
+
+            <View style={stylesGlobal.passwordInputContainer}>
+              <Controller
+                control={control}
+                rules={{
+
+                  required: true,
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={[stylesGlobal.passwordInputField,
+                    { backgroundColor: colors.white, color: colors.black }
+                    ]}
+                    secureTextEntry={passwordVisibility}
+                    placeholder="Enter Password"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                )}
+                name="password"
+              />
+
+              <TouchableOpacity onPress={handlePasswordVisibility}>
+                <Icon name={rightIcon} size={20} color={colors.grey} />
+              </TouchableOpacity>
+            </View>
+            {errors.password && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:passwordRequired')}
+              </Text>
+            )}
+          </BasicView>
+
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:confirmPassword')}
+            </Text>
+
+            <View style={stylesGlobal.passwordInputContainer}>
               <Controller
                 control={control}
                 rules={{
                   required: true,
+                  validate: (value) => value === confirmPassword,
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
-                  <PhoneInput
-                    ref={phoneInput}
-                    placeholder="714 055 666"
-                    defaultValue={value}
-                    defaultCode="TZ"
-                    countryPickerProps={{
-                      countryCodes: ['TZ', 'KE', 'UG', 'RW', 'BI'],
-                    }}
-                    layout="first"
-                    // onChangeText={}
-                    onChangeFormattedText={text => {
+                  <TextInput
+                    style={[stylesGlobal.passwordInputField,
+                    { backgroundColor: colors.white, color: colors.black }
+                    ]}
+                    secureTextEntry={passwordVisibility}
+                    placeholder={t('auth:confirmPassword')}
+                    onBlur={onBlur}
+                    onChangeText={(text) => {
+                      setConfirmPassword(text);
                       onChange(text);
                     }}
-                    withDarkTheme
-                    withShadow
-                    autoFocus
-                    containerStyle={stylesGlobal.phoneInputContainer}
-                    textContainerStyle={stylesGlobal.phoneInputTextContainer}
-                    textInputStyle={stylesGlobal.phoneInputField}
-                    textInputProps={{
-                      maxLength: 9,
-                    }}
-                  />
-                )}
-                name="phone"
-              />
-              {errors.phone && (
-                <Text style={stylesGlobal.errorMessage}>
-                  {t('auth:phoneRequired')}
-                </Text>
-              )}
-            </BasicView>
-
-            <BasicView>
-              <Text
-                style={[
-                  stylesGlobal.inputFieldTitle,
-                  stylesGlobal.marginTop20,
-                ]}>
-               {t('auth:firstName')}
-              </Text>
-
-              <Controller
-                control={control}
-                rules={{
-                  required: true,
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInputField
-                    placeholder= {t('auth:enterFirstName')}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
                     value={value}
                   />
                 )}
-                name="first_name"
+                name="confirmPassword"
               />
-
-              {errors.first_name && (
-                <Text style={stylesGlobal.errorMessage}>
-                  {t('auth:firstNameRequired')}
-                </Text>
-              )}
-            </BasicView>
-
-            <BasicView>
-              <Text
-                style={[
-                  stylesGlobal.inputFieldTitle,
-                  stylesGlobal.marginTop20,
-                ]}>
-               {t('auth:lastName')}
+              <TouchableOpacity onPress={handlePasswordVisibility}>
+                <Icon name={rightIcon} size={20} color={colors.grey} />
+              </TouchableOpacity>
+            </View>
+            {confirmError && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:passwordMismatch')}
               </Text>
-
-              <Controller
-                control={control}
-                rules={{
-                  required: true,
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInputField
-                    placeholder= {t('auth:enterLastName')}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                )}
-                name="last_name"
-              />
-
-              {errors.last_name && (
-                <Text style={stylesGlobal.errorMessage}>
-                  {t('auth:lastNameRequired')}
-                </Text>
-              )}
-            </BasicView>
-
-            <BasicView>
-              <Text
-                style={[
-                  stylesGlobal.inputFieldTitle,
-                  stylesGlobal.marginTop20,
-                ]}>
-                {t('auth:nida')}
-              </Text>
-
-         
-              <Controller
-                control={control}
-                rules={{
-                  required: true,
-                  validate: (value) => {
-                    if (value.length !== 20) {
-                      setNidaError(t('auth:nida20numbers'));
-                      return false;
-                    }
-                    setNidaError('');
-                    return true;
-                  },
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInputField
-                    placeholder={t('auth:enterNida')}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    keyboardType='numeric'
-                  />
-                )}
-                name="nida"
-              />
-                   {nidaError && (
-                <Text style={stylesGlobal.errorMessage}>
-                  {nidaError}
-                </Text>
-              )}
-            </BasicView>
-
-            <BasicView>
-              <Text
-                style={[
-                  stylesGlobal.inputFieldTitle,
-                  stylesGlobal.marginTop20,
-                ]}>
-               {t('auth:password')}
-              </Text>
-
-              <View style={stylesGlobal.passwordInputContainer}>
-                <Controller
-                  control={control}
-                  rules={{
-                 
-                    required: true,
-                  }}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      style={[stylesGlobal.passwordInputField,
-                        {backgroundColor:colors.white,color:colors.black}
-                      ]}
-                      secureTextEntry={passwordVisibility}
-                      placeholder="Enter Password"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                    />
-                  )}
-                  name="password"
-                />
-
-                <TouchableOpacity onPress={handlePasswordVisibility}>
-                  <Icon name={rightIcon} size={20} color={colors.grey} />
-                </TouchableOpacity>
-              </View>
-              {errors.password && (
-                <Text style={stylesGlobal.errorMessage}>
-                 {t('auth:passwordRequired')}
-                </Text>
-              )}
-            </BasicView>
+            )}
+          </BasicView>
 
 
-            <BasicView>
-              <Button loading={loading || nidaLoading} onPress={handleSubmit(onSubmit)}>
-                <ButtonText>{t('auth:register')}</ButtonText>
-              </Button>
-            </BasicView>
+          <BasicView>
+            <Button loading={loading || nidaLoading} onPress={handleSubmit(onSubmit)}>
+              <ButtonText>{t('auth:register')}</ButtonText>
+            </Button>
+          </BasicView>
 
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate('Login');
-              }}
-              style={[stylesGlobal.marginTop20, stylesGlobal.centerView]}>
-              <Text style={stylesGlobal.touchablePlainTextSecondary}>
+          <View style={{marginHorizontal: 20, marginBottom: 80 }}>
+
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('Login');
+            }}
+            style={[stylesGlobal.marginTop20, stylesGlobal.centerView]}>
+            <Text style={stylesGlobal.touchablePlainTextSecondary}>
               {t('auth:alreadyHaveAccount')}
-              </Text>
-            </TouchableOpacity>
+            </Text>
+          </TouchableOpacity>
           </View>
-       
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );

@@ -22,7 +22,7 @@ function updateStatus(state: any, status: any) {
 export const getClients = createAsyncThunk(
     'registers/getClients',
     async ({ agentId }: any) => {
-              console.log('agentid',agentId)
+            //  console.log('agentid',agentId)
         let header: any = await authHeader();
         const response = await fetch(`${API_URL}/agents/clients/${agentId}`, {
             method: 'GET',
@@ -236,11 +236,10 @@ const RegisterSlice = createSlice({
             if (action.payload.status) {
                 state.client = { ...action.payload.data.client };
                 updateStatus(state, '');
+                state.clients.push(state.client);
             } else {
                 updateStatus(state, action.payload.status);
             }
-
-            state.clients.push(state.client);
         });
         builder.addCase(createClient.rejected, (state, action) => {
             console.log('Rejected');
@@ -264,11 +263,12 @@ const RegisterSlice = createSlice({
             if (action.payload.status) {
                 state.provider = { ...action.payload.data.provider };
                 updateStatus(state, '');
+                state.providers.push(state.provider);
             } else {
                 updateStatus(state, action.payload.status);
             }
 
-            state.providers.push(state.provider);
+            
         });
         builder.addCase(createProvider.rejected, (state, action) => {
             console.log('Rejected');
@@ -312,22 +312,25 @@ const RegisterSlice = createSlice({
         builder.addCase(updateClient.fulfilled, (state, action) => {
             console.log('Update Task Fulfilled');
 
-             console.log('action payload',action.payload);
+            if (action.payload.status) {
             const updatedclient = action.payload.data.client;
 
             const clientIndex = state.clients.findIndex((client) => client.id === updatedclient.id);
             console.log('clientindex', clientIndex);
             if (clientIndex !== -1) {
-                // Update the task in the array immutably
+
                 state.clients = [
                     ...state.clients.slice(0, clientIndex),
                     updatedclient,
                     ...state.clients.slice(clientIndex + 1),
                 ];
             }
-
-            state.loading = false;
             updateStatus(state, '');
+        }else{
+            updateStatus(state, action.payload.status);
+        }
+           
+        state.loading = false;
         });
 
 
@@ -373,7 +376,7 @@ const RegisterSlice = createSlice({
         builder.addCase(updateProvider.fulfilled, (state, action) => {
             console.log('Update Task Fulfilled');
 
-          
+            if (action.payload.status) {
             const updatedprovider = action.payload.data.provider;
 
             const providerIndex = state.providers.findIndex((provider) => provider.id === updatedprovider.id);
@@ -386,7 +389,9 @@ const RegisterSlice = createSlice({
                     ...state.providers.slice(providerIndex + 1),
                 ];
             }
-
+           
+       
+        }
             state.loading = false;
             updateStatus(state, '');
         });

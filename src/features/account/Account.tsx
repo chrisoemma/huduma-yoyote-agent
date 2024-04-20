@@ -11,10 +11,11 @@ import { firebase } from '@react-native-firebase/storage';
 import RNFS from 'react-native-fs';
 import { updateProfile, userLogout } from '../auth/userSlice';
 import DocumentPicker, { types } from 'react-native-document-picker'
+import Notification from '../../components/Notification';
 
 const Account = ({ navigation }: any) => {
 
-  const stylesGlobal=globalStyles();
+  const stylesGlobal = globalStyles();
 
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -25,6 +26,10 @@ const Account = ({ navigation }: any) => {
 
   const { isDarkMode } = useSelector(
     (state: RootStateOrAny) => state.theme,
+  );
+
+  const { selectedLanguage } = useSelector(
+    (state: RootStateOrAny) => state.language,
   );
 
 
@@ -59,9 +64,6 @@ const Account = ({ navigation }: any) => {
       setMessage('');
     }, 5000);
   };
-
-
-   
 
   const [locationName, setLocationName] = useState(null);
 
@@ -173,6 +175,21 @@ const Account = ({ navigation }: any) => {
     >
       <View style={stylesGlobal.appView}>
 
+        {user.agent && user?.agent?.status == 'Pending approval' ? (<Notification
+          message={`${t('screens:accountPendingActivation')}`}
+          type="info"
+        />) : (<View />)}
+
+        {!user.agent && user.status == 'Active' ? (<Notification
+          message={`${t('screens:reregitrationAgent')}`}
+          type="info"
+        />) : (<View />)}
+
+        {user.status == 'In Active' ? (<Notification
+          message={`${t('screens:accountDeactivated')}`}
+          type="danger"
+        />) : (<View />)}
+
         <View style={styles.btnView}>
           {profile == null ? (<View />) : (
             <TouchableOpacity
@@ -201,11 +218,16 @@ const Account = ({ navigation }: any) => {
             </TouchableOpacity>
           )}
 
+
           <TouchableOpacity style={{ marginRight: 10, alignSelf: 'flex-end' }}
             onPress={() => {
-              navigation.navigate('Edit Account', {
-                client: user?.client
-              })
+              if (user?.status !== 'In Active') {
+                navigation.navigate('Edit Account', {
+                  client: user?.client
+                });
+              } else {
+                ToastAndroid.show(`${t('screens:notAllowedAction')}`, ToastAndroid.SHORT);
+              }
             }}
           >
             <Icon
@@ -231,15 +253,28 @@ const Account = ({ navigation }: any) => {
             <Icon
               name="camera"
               size={23}
-              color={isDarkMode ? colors.white : colors.black}
+              color={colors.white}
               style={styles.camera}
             />
           </TouchableOpacity>
         </View>
         <Text style={{ color: isDarkMode ? colors.white : colors.secondary, fontWeight: 'bold', alignSelf: 'center' }}>{user.name}</Text>
 
-        <View>
-          <TouchableOpacity style={{ flexDirection: 'row', margin: 10 }}
+        <View style={{ marginLeft: 10 }}>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:profession')}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
+            onPress={{}}
+          >
+            <Icon
+              name="idcard"
+              color={isDarkMode ? colors.white : colors.black}
+              size={25}
+            />
+            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{selectedLanguage == 'en' ? user?.agent?.designation?.name?.en : user?.agent?.designation?.name?.sw}</Text>
+          </TouchableOpacity>
+
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:phone')}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={() => makePhoneCall(phoneNumber)}
           >
             <Icon
@@ -249,26 +284,59 @@ const Account = ({ navigation }: any) => {
             />
             <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{user.phone}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', marginHorizontal: 10 }}>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:email')}:</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
             <Icon
               name="mail"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.secondary }}>{user.email}</Text>
+            {user?.email == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey }}> {t('screens:noEmail')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{user?.email}</Text>)
+            }
           </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 5 }}>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:location')}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
             <Icon
               name="enviroment"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
             {
-              locationName == null ? (<View />) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{breakTextIntoLines(locationName, 20)}</Text>)
+              locationName == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey }}> {t('screens:noresidenceData')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{breakTextIntoLines(locationName, 20)}</Text>)
             }
 
           </TouchableOpacity>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:nida')}</Text>
+
+          <TouchableOpacity style={{ flexDirection: 'row' }}
+          >
+            <Icon
+              name="infocirlce"
+              color={isDarkMode ? colors.white : colors.black}
+              size={25}
+            />
+            <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{user?.nida}</Text>
+          </TouchableOpacity>
         </View>
+        {user.agent ? (
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('My Documents', {
+                provider: user?.provider
+              })
+            }}
+            style={{
+              alignSelf: 'flex-end',
+              backgroundColor: colors.alsoLightGrey,
+
+            }}>
+            <Text style={{
+              padding: 5,
+              color: colors.black,
+              fontWeight: 'bold'
+            }}>{t('screens:myDocuments')}</Text>
+          </TouchableOpacity>
+        ) : (<View />)}
         <View style={{ marginVertical: 20 }}>
           <Divider />
         </View>

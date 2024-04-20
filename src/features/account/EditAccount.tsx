@@ -28,6 +28,7 @@ import GooglePlacesInput from '../../components/GooglePlacesInput';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { PLACES_API_KEY } from '../../utils/config';
 import { validateTanzanianPhoneNumber } from '../../utils/utilts';
+import ToastMessage from '../../components/ToastMessage';
 
 const EditAccount = ({ route, navigation }: any) => {
 
@@ -42,6 +43,7 @@ const EditAccount = ({ route, navigation }: any) => {
   const [location, setLocation] = useState({} as any);
 
   const [message, setMessage] = useState('');
+  const [gLocation,setGLocation]=useState({})
 
   const { t } = useTranslation();
 
@@ -53,16 +55,17 @@ const EditAccount = ({ route, navigation }: any) => {
       setValue('phone', cleanedPhone);
       setValue('email', user?.email);
       setValue('nida',user?.agent.nida);
+      setGLocation({latitude:user?.agent?.latitude,longitude:user?.agent?.longitude})
      
   }, [route.params]);
 
 
 
-  useEffect(() => {
-    if (status !== '') {
-      setMessage(status);
-    }
-  }, [status]);
+  // useEffect(() => {
+  //   if (status !== '') {
+  //     setMessage(status);
+  //   }
+  // }, [status]);
 
   const {
     control,
@@ -81,11 +84,31 @@ const EditAccount = ({ route, navigation }: any) => {
   });
 
 
+
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+
+  const toggleToast = () => {
+    setShowToast(!showToast);
+  };
+
+
+  const showToastMessage = (message) => {
+    setToastMessage(message);
+    toggleToast(); 
+    setTimeout(() => {
+      toggleToast();
+    }, 10000); 
+  };
+  
   const selectLocation = (locationSelected: any) => {
     console.log('Location selected ::');
     console.log(locationSelected);
     setLocation(locationSelected);
   };
+
+
 
 
   const setDisappearMessage = (message: any) => {
@@ -102,11 +125,8 @@ const EditAccount = ({ route, navigation }: any) => {
     data.longitude = location?.lng
     data.status='S.Valid'
     data.phone=validateTanzanianPhoneNumber(data.phone);
-
-
-    console.log('dataa',data);
   
-     
+    setShowToast(false)
     dispatch(updateUserInfo({data:data,userType:'agent',userId:user?.id}))
     .unwrap()
     .then(result => {
@@ -118,20 +138,33 @@ const EditAccount = ({ route, navigation }: any) => {
           screen: 'Account',
           message: message
         });
+      }else{
+        if (result.error) {
+          setDisappearMessage(result.error
+          );
+          setShowToast(true)
+          showToastMessage(t('screens:errorOccured'));
+        } else {
+          setDisappearMessage(result.message);
+        }
+     
       } 
     })
 
   }
 
-  // console.log('user phone',user.phone);
 
-  // console.log('location',location)
 
   const stylesGlobal=globalStyles();
 
   return (
 
     <SafeAreaView style={stylesGlobal.scrollBg}>
+           {showToast?(
+        <View style={{marginBottom:'20%'}}>
+        <ToastMessage message={toastMessage} onClose={toggleToast} />
+        </View>):(<></>)
+        }
       <ScrollView contentInsetAdjustmentBehavior="automatic">
       
           <View>
@@ -156,6 +189,7 @@ const EditAccount = ({ route, navigation }: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInputField
+                  placeholderTextColor={colors.alsoGrey}
                      placeholder= {t('screens:enterPhone')}
                     onBlur={onBlur}
                     onChangeText={(text) => {
@@ -204,6 +238,7 @@ const EditAccount = ({ route, navigation }: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInputField
+                  placeholderTextColor={colors.alsoGrey}
                     placeholder= {t('auth:enterFirstName')}
                     onBlur={onBlur}
                     onChangeText={onChange}
@@ -236,6 +271,7 @@ const EditAccount = ({ route, navigation }: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInputField
+                  placeholderTextColor={colors.alsoGrey}
                     placeholder= {t('auth:enterLastName')}
                     onBlur={onBlur}
                     onChangeText={onChange}
@@ -272,6 +308,7 @@ const EditAccount = ({ route, navigation }: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInputField
+                  placeholderTextColor={colors.alsoGrey}
                     placeholder= {t('auth:enterEmail')}
                     onBlur={onBlur}
                     keyboardType='email-address'
@@ -305,6 +342,7 @@ const EditAccount = ({ route, navigation }: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInputField
+                  placeholderTextColor={colors.alsoGrey}
                     placeholder={t('auth:enterNida')}
                     onBlur={onBlur}
                     onChangeText={onChange}
@@ -322,18 +360,20 @@ const EditAccount = ({ route, navigation }: any) => {
             <BasicView style={stylesGlobal.marginTop20}>
               <Text>{t('screens:location')}:</Text>
               <GooglePlacesInput
-                setLocation={selectLocation}
-                placeholder="What's your location?"
-              />
+              setLocation={selectLocation}
+              placeholder={t('screens:whatsYourLocation')}
+              defaultValue={gLocation}
+            />
             </BasicView>
 
           </BasicView>
-
+             
             <BasicView>
-              <Button  onPress={handleSubmit(onSubmit)}>
+              <Button loading={ loading}  onPress={handleSubmit(onSubmit)}>
                 <ButtonText>{t('navigate:editAccount')}</ButtonText>
               </Button>
             </BasicView>
+
           </View>
       </ScrollView>
     </SafeAreaView>

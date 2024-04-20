@@ -147,36 +147,70 @@ export const getLocationName = async (latitude, longitude) => {
 
       return locationNameParts;
     } else {
-      return 'Location not found';
+      return '';
     }
   } catch (error) {
     console.error('Error fetching location data:', error);
-    return 'Error fetching location data';
+    return '';
   }
 };
 
+export const  convertBusinessesToLabelsAndValues=(businesses)=> {
+  const labelsAndValues = businesses.map((business) => ({
+    value: business.service.id.toString(),
+    label: business.service.name,
+  }));
+  return labelsAndValues;
+}
+
+export const convertRegDoc=(regdocs)=> {
+  const labelsAndValues = regdocs.map((doc) => ({
+    value: doc.id,
+    label: doc.doc_name,
+    percentage:doc.percentage
+  }));
+  return labelsAndValues;
+}
+
 export function breakTextIntoLines(text, maxLength) {
-  if (text.length <= maxLength) {
+  if (text?.length <= maxLength) {
     return text; // No need to break into lines if it's within the maxLength
   }
 
   const chunks = [];
-  while (text.length > 0) {
-    chunks.push(text.substring(0, maxLength));
-    text = text.substring(maxLength);
+  while (text?.length > 0) {
+    chunks?.push(text.substring(0, maxLength));
+    text = text?.substring(maxLength);
   }
 
-  return chunks.join('\n');
+  return chunks?.join('\n');
 }
+
+export const transformDataToDropdownOptions=(data:any)=> {
+  if (!data || !Array.isArray(data)) {
+    return [];
+  }
+
+  return data.map(item => ({
+    label: item.name,
+    value: item.id.toString(),
+  }));
+}
+
+
+
 
 
 export const getStatusBackgroundColor = (status: string) => {
   switch (status) {
-    case 'Incomplete':
+    case 'Incomplete' :
+    case 'Pending':
       return colors.orange;
-    case 'Unpaid':
+    case 'Unpaid' :
+    case 'Rejected':
       return colors.dangerRed;
     case 'Paid':
+    case 'Approved':
       return colors.successGreen;
     default:
       return colors.secondary;

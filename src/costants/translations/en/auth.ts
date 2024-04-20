@@ -49,7 +49,11 @@ export default{
     nidaRequired:'NIDA  number required',
     nida20numbers:'NIDA number must be 20 characters long',
     nidaDoesNotExist:'NIDA number does not exists',
-    enterEmail:'Enter Email'
+    enterEmail:'Enter Email',
+    confirmPassword:'Confirm Password',
+    passwordMismatch:'Password Mismatch',
+    designationError:'Please, Choose your profession',
+    nidaEmptyError:'NIDA Number is required'
 
    
 }

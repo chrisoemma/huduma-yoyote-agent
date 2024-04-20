@@ -131,8 +131,9 @@ Alert.alert(`${t('screens:deleteClient')}`, `${t('screens:areYouWantToDelete')}`
                     />
                 </View>
                 <Text style={{color:colors.secondary,fontWeight:'bold',alignSelf:'center'}}>{client.name}</Text>
-               <View>
-                <TouchableOpacity style={{flexDirection:'row',margin:10}}
+                <View style={{marginLeft:10}}>
+               <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:phone')}</Text>
+                <TouchableOpacity style={{flexDirection:'row'}}
                  onPress={() => makePhoneCall(phoneNumber)}
                 >
                 <Icon    
@@ -142,15 +143,7 @@ Alert.alert(`${t('screens:deleteClient')}`, `${t('screens:areYouWantToDelete')}`
                   />
                     <Text style={{paddingHorizontal:10,color: isDarkMode ? colors.white : colors.black}}>{client.user.phone}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={{ flexDirection: 'row', margin: 10 }}
-          >
-            <Icon
-              name="infocirlce"
-              color={isDarkMode ? colors.white : colors.black}
-              size={25}
-            />
-            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.black }}>{client?.nida}</Text>
-          </TouchableOpacity>
+         
                </View>
               <View style={{marginVertical:20}}>
               <Divider />

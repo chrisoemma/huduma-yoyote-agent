@@ -21,7 +21,7 @@ const DrawerHeader = styled.View`
   justify-content: center;
   padding-left: 5px;
   margin-bottom: 40px;
-  background-color: ${colors.primary};
+  background-color: ${colors.secondary};
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
 `;
@@ -118,7 +118,7 @@ const CustomDrawerContent = (props: any) => {
     <DrawerContentScrollView {...props}>
       <DrawerHeader isDarkMode={isDarkMode}>
         <Image
-          source={isDarkMode? require('./../../assets/images/logo-white.png'): require('./../../assets/images/logo.png')}
+          source={require('./../../assets/images/logo-white.png')}
           style={{
             width: '60%',
             height: 60,
@@ -130,7 +130,7 @@ const CustomDrawerContent = (props: any) => {
             color:colors.white,
             fontWeight: 'bold'
           }}>
-            Espe services
+           ESPE SERVICE
           </Text>
         </View>
       </DrawerHeader>

@@ -60,7 +60,7 @@ export default function BottomHomeTabNavigator() {
       return <FontAwesome5 name={iconName as string} size={size} color={color} />;
     },
     tabBarActiveTintColor: colors.secondary,
-    tabBarInactiveTintColor:isDarkMode?colors.white:colors.black,
+    tabBarInactiveTintColor:isDarkMode?colors.white:colors.blackBg,
   });
 
 
@@ -83,9 +83,8 @@ export default function BottomHomeTabNavigator() {
       },
     ];
   
-    if (user.client && user.status !== 'Active') {
-      // Remove 'Home' and 'Requests' screens if the user's status is not active
-      return screens.filter(screen => screen.name !== 'Home' && screen.name !== 'Requests');
+    if (user.agent && user?.agent?.status !== 'Active') {
+      return screens.filter(screen => screen.name !== 'Home' && screen.name !== 'MyRegisters');
     }
   
     return screens;

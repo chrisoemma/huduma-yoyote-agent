@@ -17,6 +17,7 @@ import { getClients, getProviders } from '../registers/RegisterSlice'
 import { getCommisionMonthly } from './ChartSlice'
 //import { LineChart } from 'react-native-chart-kit'
 import CustomBackground from '../../components/CustomBgBottomSheet'
+import Notification from '../../components/Notification'
 
 
 const Home = ({ navigation }: any) => {
@@ -33,9 +34,9 @@ const Home = ({ navigation }: any) => {
     const [refreshing, setRefreshing] = useState(false);
 
 
-    const {isDarkMode} = useSelector(
+    const { isDarkMode } = useSelector(
         (state: RootStateOrAny) => state.theme,
-      );
+    );
 
     const { user } = useSelector(
         (state: RootStateOrAny) => state.user,
@@ -51,7 +52,7 @@ const Home = ({ navigation }: any) => {
 
     useEffect(() => {
         dispatch(getClients({ agentId: user?.agent?.id }));
-      //  dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
+        //  dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
         dispatch(getProviders({ agentId: user?.agent?.id }));
     }, [dispatch])
 
@@ -60,7 +61,7 @@ const Home = ({ navigation }: any) => {
 
         setRefreshing(true);
         dispatch(getClients({ agentId: user?.agent?.id }));
-       // dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
+        // dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
         dispatch(getProviders({ agentId: user?.agent?.id }))
             .unwrap()
             .then(result => {
@@ -105,9 +106,7 @@ const Home = ({ navigation }: any) => {
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={callGetDashboard} />
                     }
-
                 >
-
                     <BasicView>
                         <View style={{
                             flexDirection: 'row',
@@ -120,13 +119,13 @@ const Home = ({ navigation }: any) => {
                                 mainTitle={t('screens:serviceProviders')}
                                 number={providers?.length || 0}
                                 onPress={handlePresentModalPress(`${t('screens:serviceProviders')}`)}
-                                color={colors.primary}
+                                color={colors.secondary}
                             />
                             <Databoard
                                 mainTitle={t('screens:clients')}
                                 number={clients?.length || 0}
                                 onPress={handlePresentModalPress(`${t('screens:clients')}`)}
-                                color={colors.primary}
+                                color={colors.secondary}
                             />
 
                         </View>
@@ -174,32 +173,32 @@ const Home = ({ navigation }: any) => {
                         <BottomSheetScrollView
                             contentContainerStyle={styles.contentContainer}
                         >
-                            <Text style={[styles.title,{color:isDarkMode?colors.white:colors.black}]}>{sheetTitle}</Text>
+                            <Text style={[styles.title, { color: isDarkMode ? colors.white : colors.black }]}>{sheetTitle}</Text>
 
                             {sheetTitle === 'Service providers' || sheetTitle === 'Watoa Huduma' ? (
                                 providers?.map(item => (
-                                    <TouchableOpacity style={[styles.bottomView,{borderBottomColor: isDarkMode?colors.white: colors.alsoGrey}]}
+                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey }]}
                                         onPress={() => {
                                             navigation.navigate('Provider Details', {
                                                 provider: item
                                             })
                                         }}
                                     >
-                                        <Text style={{ color: isDarkMode?colors.black:colors.primary,fontWeight:'bold',fontSize:16 }}>{item.name}</Text>
-                                        <Text style={{ paddingVertical: 10, color: isDarkMode?colors.white:colors.black}}>{item.user.phone}</Text>
+                                        <Text style={{ color: isDarkMode ? colors.black : colors.primary, fontWeight: 'bold', fontSize: 16 }}>{item?.name}</Text>
+                                        <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user?.phone}</Text>
 
                                     </TouchableOpacity>
                                 ))
 
                             ) : (
                                 clients?.map(item => (
-                                    <TouchableOpacity style={[styles.bottomView,{borderBottomColor: isDarkMode?colors.white: colors.alsoGrey}]}
+                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey }]}
                                         onPress={() => navigation.navigate('Client Details', {
                                             client: item
                                         })}
                                     >
-                                        <Text style={{ color: isDarkMode?colors.black:colors.primary,fontWeight:'bold',fontSize:16 }}>{item?.name}</Text>
-                                        <Text style={{ paddingVertical: 10, color: isDarkMode?colors.white:colors.black}}>{item?.user.phone}</Text>
+                                        <Text style={{ color: isDarkMode ? colors.black : colors.primary, fontWeight: 'bold', fontSize: 16 }}>{item?.name}</Text>
+                                        <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user.phone}</Text>
                                     </TouchableOpacity>
                                 ))
                             )}
@@ -231,7 +230,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         fontSize: 15,
         fontWeight: 'bold',
-       
+
     },
     listView: {
         marginHorizontal: 5,
@@ -282,7 +281,7 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         margin: 5,
         borderBottomWidth: 0.5
-        
+
     },
 })
 

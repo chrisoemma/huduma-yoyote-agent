@@ -332,8 +332,9 @@ const userSlice = createSlice({
 
       state.loading = false;
       updateStatus(state, '');
-
+       
       if (action.payload.status && action.payload.token) {
+        state.user = action.payload.user as any;
         state.user.token = action.payload.token as any;
         updateStatus(state, '');
       } else {
@@ -411,16 +412,15 @@ const userSlice = createSlice({
       console.log('Update Task Fulfilled');
       console.log('dataaa1234', action.payload.data)
 
+      if (action.payload.status){
       state.user = {
         ...state.user,
         ...action.payload.data.user,
       };
-
-      // Update token if it's received in the response
       if (action.payload.data.token) {
         state.user.token = action.payload.data.token;
       }
-
+    }
       state.loading = false;
       updateStatus(state, '');
     });

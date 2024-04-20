@@ -79,11 +79,11 @@ const MyRegisters = ({ navigation }: any) => {
         <FlatList
           data={activeTab === 'clients' ? clients : providers}
           renderItem={renderProviderItem}
-          keyExtractor={(item) => item?.id?.toString()}
+          keyExtractor={(item) => item?.id}
           numColumns={2}
         />
       </View>
-      <FloatBtn
+       {user.agent && user.status=='Active'?(<FloatBtn
         iconType='add'
         onPress={() => {
           if (activeTab === 'clients') {
@@ -92,7 +92,8 @@ const MyRegisters = ({ navigation }: any) => {
             navigation.navigate('Register Provider');
           }
         }}
-      />
+      />):(<View />)}
+    
     </SafeAreaView>
   );
 };

@@ -13,6 +13,7 @@ import OnBoardingStack from './OnboardingStack';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../costants/IMLocalize';
 import { selectLanguage } from '../costants/languageSlice';
+import { colors } from '../utils/colors';
 
 
 
@@ -62,8 +63,9 @@ const Navigation = () => {
     ...DarkTheme,
     colors: {
       ...DarkTheme.colors,
-      background: 'black',
-      text: 'white',
+      background: colors.blackBg,
+      text: '#525252',
+      inputText:colors.blackBg
     },
   };
 

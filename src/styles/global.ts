@@ -7,12 +7,11 @@ import { colors } from '../utils/colors';
   const {isDarkMode} = useSelector(
     (state: RootStateOrAny) => state.theme,
   );
-
-  const containerBackgroundColor = isDarkMode ? 'black' : colors.lightGrey;
-  const scrollBgBackgroundColor = isDarkMode ? 'black' : colors.whiteBackground;
+  const containerBackgroundColor = isDarkMode ? colors.blackBg : colors.lightGrey;
+  const scrollBgBackgroundColor = isDarkMode ? colors.blackBg : colors.whiteBackground;
   const textInputColor = isDarkMode ? 'white' : 'black';
   const buttonText = isDarkMode ? colors.white : colors.primary;
-  const borderColor = isDarkMode ? 'white' : colors.grey;
+  const borderColor = isDarkMode ? 'gray' : colors.lightGrey;
   const shadowColor = isDarkMode ? '#000' : 'transparent';
 
   const styles= StyleSheet.create({
@@ -43,7 +42,7 @@ import { colors } from '../utils/colors';
       zIndex: 1000,
       height: 100,
       width: '100%',
-      backgroundColor: colors.primary,
+      backgroundColor: colors.secondary,
       borderBottomLeftRadius: 20,
       borderBottomRightRadius: 20,
     },
@@ -75,6 +74,8 @@ import { colors } from '../utils/colors';
     horizontalLogo: {
       width: 150,
       height: 50,
+      resizeMode: 'contain',
+      alignSelf: 'center',
     },     
     centerView: {
       justifyContent: 'center',
