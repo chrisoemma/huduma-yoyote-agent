@@ -53,7 +53,9 @@ export default{
     confirmPassword:'Confirm Password',
     passwordMismatch:'Password Mismatch',
     designationError:'Please, Choose your profession',
-    nidaEmptyError:'NIDA Number is required'
+    nidaEmptyError:'NIDA Number is required',
+
+    resendOTP:'resend OTP'
 
    
 }

@@ -107,6 +107,38 @@ export const userVerify = createAsyncThunk(
   },
 );
 
+export const resendOTP = createAsyncThunk(
+  'users/resendOTP',
+  async (data: PhoneVerificationDTO) => {
+    const response = await fetch(`${API_URL}/auth/resendOTP`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return (await response.json()) as UserData;
+  },
+);
+
+
+export const multiRegister = createAsyncThunk(
+  'users/multiRegister',
+  async ({data,userId}) => {
+     
+    const response = await fetch(`${API_URL}/auth/multiaccount_register/${userId}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return (await response.json()) as UserData;
+  },
+);
+
 export const updateProfile = createAsyncThunk(
   'users/updateProfile',
   async ({ data, userId }: any) => {
@@ -231,6 +263,9 @@ const userSlice = createSlice({
     setFirstTime: (state, action) => {
       state.isFirstTimeUser = action.payload;
     },
+    setUserAccountStatus:(state,action)=>{
+      state.user.status=action.payload
+    },
   },
   extraReducers: builder => {
     //LOGIN
@@ -348,6 +383,26 @@ const userSlice = createSlice({
       updateStatus(state, '');
     });
 
+
+    //RESEND OTP
+    builder.addCase(resendOTP.pending, state => {
+      state.loading = true;
+      updateStatus(state, '');
+    });
+    builder.addCase(resendOTP.fulfilled, (state, action) => {
+       
+      if (action.payload.status) {
+        updateStatus(state, '');
+      } else {
+        updateStatus(state, '');
+      }
+      state.loading = false;
+    });
+    builder.addCase(resendOTP.rejected, (state, action) => {
+      updateStatus(state, '');
+      state.loading = false;
+    });
+
     //FORGOT PASSWORD
     builder.addCase(forgotPassword.pending, state => {
       console.log('Pending');
@@ -374,6 +429,36 @@ const userSlice = createSlice({
       state.loading = false;
       updateStatus(state, '');
     });
+
+
+
+        //multi account 
+
+        builder.addCase(multiRegister.pending, state => {
+          console.log('Pending');
+          state.loading = true;
+          updateStatus(state, '');
+        });
+        builder.addCase(multiRegister.fulfilled, (state, action) => {
+    
+          state.loading = false;
+          updateStatus(state, '');
+    
+          if (action.payload.status) {
+            state.user = action.payload.user as any;
+            state.user.token = action.payload.token;
+            AsyncStorage.setItem('token', action.payload.token);
+            updateStatus(state, '');
+          } else {
+            updateStatus(state, action.payload);
+          }
+        });
+        builder.addCase(multiRegister.rejected, (state, action) => {
+          console.log('Rejected');
+          console.log(action.error);
+          state.loading = false;
+          updateStatus(state, '');
+        });
 
     //RESET PASSWORD
     builder.addCase(resetPassword.pending, state => {
@@ -463,6 +548,6 @@ const userSlice = createSlice({
 });
 
 
-export const { userLogout, clearMessage,setFirstTime } = userSlice.actions;
+export const { userLogout, clearMessage,setFirstTime,setUserAccountStatus } = userSlice.actions;
 
 export default userSlice.reducer;

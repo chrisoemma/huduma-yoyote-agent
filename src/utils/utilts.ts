@@ -179,11 +179,11 @@ export function breakTextIntoLines(text, maxLength) {
 
   const chunks = [];
   while (text?.length > 0) {
-    chunks?.push(text.substring(0, maxLength));
-    text = text?.substring(maxLength);
+    chunks.push(text?.substring(0, maxLength));
+    text = text.substring(maxLength);
   }
 
-  return chunks?.join('\n');
+  return chunks.join('\n');
 }
 
 export const transformDataToDropdownOptions=(data:any)=> {

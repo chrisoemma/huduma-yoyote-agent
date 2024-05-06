@@ -118,7 +118,7 @@ const CustomDrawerContent = (props: any) => {
     <DrawerContentScrollView {...props}>
       <DrawerHeader isDarkMode={isDarkMode}>
         <Image
-          source={require('./../../assets/images/logo-white.png')}
+          source={require('./../../assets/images/white.png')}
           style={{
             width: '60%',
             height: 60,
@@ -130,7 +130,7 @@ const CustomDrawerContent = (props: any) => {
             color:colors.white,
             fontWeight: 'bold'
           }}>
-           ESPE SERVICE
+           Espe Service
           </Text>
         </View>
       </DrawerHeader>

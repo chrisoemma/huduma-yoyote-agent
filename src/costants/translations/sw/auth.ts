@@ -53,7 +53,8 @@ export default {
     passwordMismatch:'Neno siri aliendani',
     designationError:'Tafadhali, changua Taaluma yako',
     emailRequired:'Barua pepe sahihi inahitajika',
-    nidaEmptyError:'Namba ya NIDA inahitajika'
-
+    nidaEmptyError:'Namba ya NIDA inahitajika',
+     
+    resendOTP:'Tuma tena kodi'
 
 }

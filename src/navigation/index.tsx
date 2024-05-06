@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector, RootStateOrAny } from 'react-redux';
 import AuthStack from './AuthNavigator';
 import AppStack from './AppStack';
@@ -14,6 +13,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../costants/IMLocalize';
 import { selectLanguage } from '../costants/languageSlice';
 import { colors } from '../utils/colors';
+import NewAccountStack from './NewAccountStack';
 
 
 
@@ -30,6 +30,7 @@ const Navigation = () => {
 
 
 
+ 
   useEffect(()=>{
     i18n.changeLanguage(selectedLanguage);
   },[])
@@ -64,30 +65,33 @@ const Navigation = () => {
     colors: {
       ...DarkTheme.colors,
       background: colors.blackBg,
-      text: '#525252',
+      text: colors.white,
       inputText:colors.blackBg
     },
   };
 
 
-
   return (
     
-    <I18nextProvider i18n={i18n}>
-    <NavigationContainer theme={isDarkMode ? darkTheme : lightTheme} ref={navigationRef}>
-      <ThemeProvider value={isDarkMode ? darkTheme : lightTheme}>
-        {user.token == null ? (
-          onboardingCompleted ? (
-            <AuthStack />
-          ) : (
-            <OnBoardingStack />
-          )
+<I18nextProvider i18n={i18n}>
+  <NavigationContainer theme={isDarkMode ? darkTheme : lightTheme} ref={navigationRef}>
+    <ThemeProvider value={isDarkMode ? darkTheme : lightTheme}>
+      {user?.token == null ? (
+        onboardingCompleted ? (
+          <AuthStack />
         ) : (
+          <OnBoardingStack />
+        )
+      ) : (
+        user?.agent !== null ? (
           <AppStack />
-        )}
-      </ThemeProvider>
-    </NavigationContainer>
-    </I18nextProvider>
+        ) : (
+          <NewAccountStack />
+        )
+      )}
+    </ThemeProvider>
+  </NavigationContainer>
+</I18nextProvider>
   );
 };
 

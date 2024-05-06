@@ -92,7 +92,7 @@ const LoginScreen = ({ route, navigation }: any) => {
         
           <View style={styles.centerView}>
             <Image
-              source={isDarkMode? require('./../../../assets/images/logo-white.png'): require('./../../../assets/images/logo.png')}
+              source={isDarkMode? require('./../../../assets/images/white.png'): require('./../../../assets/images/logo.png')}
               style={[styles.verticalLogo,{height:100,marginTop:20}]}
             />
           </View>

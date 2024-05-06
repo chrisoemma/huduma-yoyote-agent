@@ -55,7 +55,7 @@ const DrawerNavigator=()=>{
   
     headerTitle: () => (
       <Image
-        source={require('./../../assets/images/logo-white.png')}
+        source={require('./../../assets/images/white.png')}
         style={globalStyles().horizontalLogo}
       />
     ),

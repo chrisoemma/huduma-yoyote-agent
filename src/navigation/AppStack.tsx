@@ -11,6 +11,7 @@ import ProviderDetails from "../features/registers/ProviderDetails";
 import ChangePassword from "../features/auth/ChangePassword";
 import CommissionDetails from "../features/commissions/CommissionDetails";
 import Documents from "../features/account/Documents";
+import FCMMessageHandler from "../components/FCMMessageHandler";
 
 
 const AppStack = () => {
@@ -23,6 +24,8 @@ const AppStack = () => {
   const { t } = useTranslation();
 
   return (
+    <>
+    <FCMMessageHandler />
     <Stack.Navigator initialRouteName="Home" >
       <Stack.Screen name="Home" component={DrawerNavigator}
         options={{ headerShown: false }}
@@ -78,6 +81,7 @@ const AppStack = () => {
         options={{ title: t('screens:myDocuments') }}
       />
     </Stack.Navigator>
+    </>
   );
 };
 
