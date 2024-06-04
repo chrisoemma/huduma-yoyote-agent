@@ -3,7 +3,7 @@ import React, { useCallback, useState, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import { globalStyles } from '../../styles/global';
 import { colors } from '../../utils/colors';
-import { makePhoneCall } from '../../utils/utilts';
+import { getStatusBackgroundColor, makePhoneCall } from '../../utils/utilts';
 import Divider from '../../components/Divider';
 import Icon from 'react-native-vector-icons/AntDesign';
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -85,6 +85,17 @@ const ProviderDetails = ({ route, navigation }: any) => {
       },
     ]);
 
+  const getStatusTranslation = (status: string) => {
+    if (status == 'In Active') {
+      return t(`screens:InActive`);
+    } else if (status == 'Pending approval') {
+      return t(`screens:PendingApproval`);
+    } else {
+      return t(`screens:${status}`);
+    }
+
+  };
+
 
 
   const stylesGlobal = globalStyles();
@@ -139,20 +150,20 @@ const ProviderDetails = ({ route, navigation }: any) => {
           />
         </View>
         <Text style={{ color: colors.secondary, fontWeight: 'bold', alignSelf: 'center' }}>{provider.name}</Text>
-        <View style={{marginLeft:10}}>
-        <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('screens:profession')}</Text>
+        <View style={{ marginLeft: 10 }}>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:profession')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
-            onPress={()=>{}}
+            onPress={() => { }}
           >
-            
+
             <Icon
               name="idcard"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{selectedLanguage =='en'?provider?.designation?.name?.en:provider?.designation?.name?.sw}</Text>
+            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{selectedLanguage == 'en' ? provider?.designation?.name?.en : provider?.designation?.name?.sw}</Text>
           </TouchableOpacity>
-          <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:phone')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:phone')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={() => makePhoneCall(phoneNumber)}
           >
@@ -163,17 +174,17 @@ const ProviderDetails = ({ route, navigation }: any) => {
             />
             <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{provider.user.phone}</Text>
           </TouchableOpacity>
-          <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:email')}:</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:email')}:</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
             <Icon
               name="mail"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            {provider?.user?.email==null?(<Text  style={{color: isDarkMode ? colors.white : colors.alsoGrey}}> {t('screens:noEmail')}</Text>):(<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{provider?.user?.email}</Text>)
+            {provider?.user?.email == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey }}> {t('screens:noEmail')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{provider?.user?.email}</Text>)
             }
           </TouchableOpacity>
-          <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:nida')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:nida')}</Text>
 
           <TouchableOpacity style={{ flexDirection: 'row' }}
           >
@@ -182,8 +193,18 @@ const ProviderDetails = ({ route, navigation }: any) => {
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-             <Text style={{color: isDarkMode ? colors.white : colors.black }}>{provider?.nida}</Text>
+            <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{provider?.nida}</Text>
           </TouchableOpacity>
+        </View>
+
+        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+
+          <View
+            style={[styles.status, { backgroundColor: getStatusBackgroundColor(provider?.status) }]}
+          ><Text style={{ color: colors.white }}>{getStatusTranslation(provider.status)}</Text>
+
+          </View>
+
         </View>
 
         <View style={{ marginVertical: 20 }}>

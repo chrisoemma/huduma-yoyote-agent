@@ -318,7 +318,7 @@ const Account = ({ navigation }: any) => {
             <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{user?.nida}</Text>
           </TouchableOpacity>
         </View>
-        {user.agent ? (
+        {user.agent && user.status !=='In Active' ? (
           <TouchableOpacity
             onPress={() => {
               navigation.navigate('My Documents', {

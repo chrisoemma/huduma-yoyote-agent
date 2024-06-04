@@ -12,16 +12,50 @@ import ChangePassword from "../features/auth/ChangePassword";
 import CommissionDetails from "../features/commissions/CommissionDetails";
 import Documents from "../features/account/Documents";
 import FCMMessageHandler from "../components/FCMMessageHandler";
+import { useEffect } from "react";
+import messaging from '@react-native-firebase/messaging';
+import { postUserDeviceToken } from "../features/auth/userSlice";
+import { useAppDispatch } from "../app/store";
+import { useSelector } from "react-redux";
 
 
 const AppStack = () => {
 
   const Stack = createNativeStackNavigator();
-  const screenOptions = {
-    headerShown: false,
-  };
+  const dispatch = useAppDispatch();
 
+  const screenOptions = {
+      headerShown: false,
+    };
+
+    const { user} = useSelector((state: RootStateOrAny) => state.user);
   const { t } = useTranslation();
+
+
+  
+  useEffect(() => {
+    const requestPermission = async () => {
+      try {
+        await messaging().requestPermission();
+        retrieveDeviceToken();
+      } catch (error) {
+        console.log('Permission denied:', error);
+      }
+    };
+    const retrieveDeviceToken = async () => {
+   
+      try {           
+        const token = await messaging().getToken();
+        console.log('Device Token:', token);
+    
+        dispatch(postUserDeviceToken({userId:user?.id,deviceToken:token}))
+      } catch (error) {
+        console.log('Error retrieving device token:', error);
+      }
+    };
+    requestPermission();
+  }, []);
+  
 
   return (
     <>

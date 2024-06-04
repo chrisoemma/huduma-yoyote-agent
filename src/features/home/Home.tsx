@@ -18,6 +18,7 @@ import { getCommisionMonthly } from './ChartSlice'
 //import { LineChart } from 'react-native-chart-kit'
 import CustomBackground from '../../components/CustomBgBottomSheet'
 import Notification from '../../components/Notification'
+import { getStatusBackgroundColor } from '../../utils/utilts'
 
 
 const Home = ({ navigation }: any) => {
@@ -37,6 +38,18 @@ const Home = ({ navigation }: any) => {
     const { isDarkMode } = useSelector(
         (state: RootStateOrAny) => state.theme,
     );
+
+
+    const getStatusTranslation = (status: string) => {
+        if(status=='In Active'){
+         return t(`screens:InActive`);
+        }else if(status=='Pending approval'){
+            return t(`screens:PendingApproval`);
+        }else{
+            return t(`screens:${status}`);
+        }
+    
+      };
 
     const { user } = useSelector(
         (state: RootStateOrAny) => state.user,
@@ -177,28 +190,42 @@ const Home = ({ navigation }: any) => {
 
                             {sheetTitle === 'Service providers' || sheetTitle === 'Watoa Huduma' ? (
                                 providers?.map(item => (
-                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey }]}
+                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey,flexDirection:'row',justifyContent:'space-between' }]}
                                         onPress={() => {
                                             navigation.navigate('Provider Details', {
                                                 provider: item
                                             })
                                         }}
                                     >
+                                        <View>
+                                            
                                         <Text style={{ color: isDarkMode ? colors.black : colors.primary, fontWeight: 'bold', fontSize: 16 }}>{item?.name}</Text>
                                         <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user?.phone}</Text>
+                                        </View>
+                                        <View
+                            style={[styles.status, { backgroundColor: getStatusBackgroundColor(item?.status) }]}
+                        ><Text style={{ color: colors.white }}>{getStatusTranslation(item.status)}</Text>
+                        </View>
 
                                     </TouchableOpacity>
                                 ))
 
                             ) : (
                                 clients?.map(item => (
-                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey }]}
+                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey,flexDirection:'row',justifyContent:'space-between' }]}
                                         onPress={() => navigation.navigate('Client Details', {
                                             client: item
                                         })}
                                     >
+                                        <View>
                                         <Text style={{ color: isDarkMode ? colors.black : colors.primary, fontWeight: 'bold', fontSize: 16 }}>{item?.name}</Text>
                                         <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user.phone}</Text>
+                                        </View>
+
+                                        <View
+                            style={[styles.status, { backgroundColor: getStatusBackgroundColor(item?.status) }]}
+                        ><Text style={{ color: colors.white }}>{getStatusTranslation(item.status)}</Text>
+                        </View>
                                     </TouchableOpacity>
                                 ))
                             )}
@@ -216,6 +243,11 @@ const styles = StyleSheet.create({
 
     container: {
         margin: 10
+    },
+    status: {
+        marginVertical: 10,
+        padding: 8,
+        borderRadius: 10
     },
     contentContainer: {
         marginHorizontal: 10

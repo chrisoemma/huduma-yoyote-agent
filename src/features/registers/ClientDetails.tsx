@@ -3,7 +3,7 @@ import React, { useCallback,useState, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import { globalStyles } from '../../styles/global';
 import { colors } from '../../utils/colors';
-import { makePhoneCall } from '../../utils/utilts';
+import { getStatusBackgroundColor, makePhoneCall } from '../../utils/utilts';
 import Divider from '../../components/Divider';
 import Icon from 'react-native-vector-icons/AntDesign';
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -85,6 +85,19 @@ Alert.alert(`${t('screens:deleteClient')}`, `${t('screens:areYouWantToDelete')}`
 ]);
 
 
+
+const getStatusTranslation = (status: string) => {
+    if (status == 'In Active') {
+        return t(`screens:InActive`);
+    } else if (status == 'Pending approval') {
+        return t(`screens:PendingApproval`);
+    } else {
+        return t(`screens:${status}`);
+    }
+
+};
+
+
   return (
           <SafeAreaView
             style={stylesGlobal.scrollBg}
@@ -145,6 +158,13 @@ Alert.alert(`${t('screens:deleteClient')}`, `${t('screens:areYouWantToDelete')}`
                 </TouchableOpacity>
          
                </View>
+               <View style={{ flexDirection: 'row',marginTop:5 }}>
+                    <View
+                        style={[styles.status, { backgroundColor: getStatusBackgroundColor(client?.status) }]}
+                    ><Text style={{ color: colors.white }}>{getStatusTranslation(client.status)}</Text>
+                    </View>
+
+                </View>
               <View style={{marginVertical:20}}>
               <Divider />
            

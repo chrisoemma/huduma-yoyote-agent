@@ -6,7 +6,7 @@ export const getActiveCommissions = createAsyncThunk(
     'commissions/getActiveCommissions',
     async (agentId) => {
         let header: any = await authHeader();
-        const response = await fetch(`${API_URL}/agents/agent_active_commissions/${agentId}`, {
+        const response = await fetch(`${API_URL}/agents/outstanding_payments/${agentId}`, {
             method: 'GET',
             headers: header,
         });
@@ -19,7 +19,7 @@ export const getPaidCommissions = createAsyncThunk(
     'commissions/getPaidCommissions',
     async (agentId) => {
         let header: any = await authHeader();
-        const response = await fetch(`${API_URL}/agents/agent_paid_commissions/${agentId}`, {
+        const response = await fetch(`${API_URL}/agents/completed_payments/${agentId}`, {
             method: 'GET',
             headers: header,
         });

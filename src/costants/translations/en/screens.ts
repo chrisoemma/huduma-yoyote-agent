@@ -88,10 +88,23 @@ Rejected:'Cancelled',
 Comfirmed:'Confirmed',
 Completed:'Completed',
 Approved:'Approved',
+Active:'Active',
+InActive:'In Active',
+Deactivated:'Deactivated',
+PendingApproval:'Pending Approval',
+Registration:'Registration',
 Uploaded:'Uploaded(Waiting Approval)', 
 Pending:'Pending(Waiting Approval)', 
 profession:'Profession',
 noresidenceData:'No residence location',
-noEmail:'No Email'
+noEmail:'No Email',
+payment_for:'Payment for',
+
+
+  termsText:'By signing up,you agree to our',
+   termsLink:'Terms & Conditions,',
+   termsContinueText:'acknowledge our',
+   privacyPolicyLink:'Privacy Policy',
+   continuePrivacyPolicy:'And confirm that you are over 18. We many send promotions related to our services-you can unsubscribe anytime in settings'
 
 };

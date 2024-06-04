@@ -209,6 +209,21 @@ export const forgotPassword = createAsyncThunk(
   },
 );
 
+export const postUserDeviceToken = createAsyncThunk(
+  'users/postUserDeviceToken',
+  async ({ userId, deviceToken }: { userId: string, deviceToken: string }) => {
+    const response = await fetch(`${API_URL}/users/device_token/${userId}`, {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ deviceToken }),
+    });
+    return response.json();
+  },
+);
+
 export const resetPassword = createAsyncThunk(
   'users/resetPassword',
   async (data: ResetPasswordDTO) => {
@@ -250,6 +265,7 @@ const userSlice = createSlice({
     user: {} as UserData,
     config: {},
     isFirstTimeUser:true,
+    deviceToken:'',
     loading: false,
     status: '',
   },
@@ -264,7 +280,8 @@ const userSlice = createSlice({
       state.isFirstTimeUser = action.payload;
     },
     setUserAccountStatus:(state,action)=>{
-      state.user.status=action.payload
+      state.user.status=action.payload.userStatus
+      state.user.agent.status=action.payload.modalStatus
     },
   },
   extraReducers: builder => {
@@ -297,6 +314,22 @@ const userSlice = createSlice({
       state.loading = false;
     });
 
+
+           //DevicToken
+           builder.addCase(postUserDeviceToken.pending, state => {
+            state.loading = true;
+          });
+          builder.addCase(postUserDeviceToken.fulfilled, (state, action) => {
+            if (action.payload.status) {
+              state.deviceToken = action.payload.data.token;
+            }
+            state.loading = false;
+          });
+          builder.addCase(postUserDeviceToken.rejected, (state, action) => {
+            console.log('Rejected');
+            console.log(action.error);
+            state.loading = false;
+          })
 
 
       //Change password

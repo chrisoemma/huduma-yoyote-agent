@@ -55,7 +55,10 @@ export default{
     designationError:'Please, Choose your profession',
     nidaEmptyError:'NIDA Number is required',
 
-    resendOTP:'resend OTP'
+    resendOTP:'resend OTP',
+    businessName:'Business Name',
+    enterBusinessName:'Enter Business Name',
+    businessNameRequired:'Business Name Required',
 
    
 }

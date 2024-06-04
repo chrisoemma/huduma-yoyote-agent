@@ -92,13 +92,25 @@ export default {
   Cancelled: 'Imefutwa',
   Rejected: 'Imekataliwa',
   Comfirmed: 'Imethibitishwa',
+  Registration:'Kusajili',
   Completed: 'Imekamilishwa',
   Approved: 'Imepitishwa',
+  Active:'Anaendelea',
+InActive:'Hatumii mfumo',
+Deactivated:'Amesitishwa',
+PendingApproval:'Subiru huakiki',
   Uploaded: 'Imepakiwa (Inasubiri uhakiki)',
   Pending: 'Imepakiwa (Inasubiri uhakiki)',
   profession: 'Kazi',
   noresidenceData: 'Hakuna sehemu ya makazi',
-  noEmail: 'Hakuna Barua pepe'
+  noEmail: 'Hakuna Barua pepe',
+  payment_for:'Malipokwa ya',
+
+termsText: "Kwa kujisajili, unakubali",
+termsLink: "Sheria na Masharti yetu,",
+termsContinueText: "unakubali",
+privacyPolicyLink: "Sera ya Faragha",
+continuePrivacyPolicy: "Na unathibitisha kuwa una zaidi ya miaka 18. Tunaweza kutuma matangazo yanayohusiana na huduma zetu - unaweza kujiondoa wakati wowote kwenye mipangilio."
 
 
 };

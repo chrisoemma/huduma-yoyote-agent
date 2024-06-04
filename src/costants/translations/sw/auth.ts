@@ -55,6 +55,9 @@ export default {
     emailRequired:'Barua pepe sahihi inahitajika',
     nidaEmptyError:'Namba ya NIDA inahitajika',
      
-    resendOTP:'Tuma tena kodi'
+    resendOTP:'Tuma tena kodi',
+    businessName:'Jina la Biashara',
+    enterBusinessName:'Ingiza jina la Biashara',
+    businessNameRequired:'Jina la Biashara linahitajika',
 
 }

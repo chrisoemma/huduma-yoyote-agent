@@ -69,9 +69,6 @@ const RegisterProvider = ({ route, navigation }: any) => {
   const [nidaLoading, setNidaLoading] = useState(false)
   const [nidaError, setNidaError] = useState('');
 
-
-
-
   const {
     control,
     setValue,
@@ -84,7 +81,8 @@ const RegisterProvider = ({ route, navigation }: any) => {
       last_name: '',
       name: '',
       nida: '',
-      email: ''
+      email: '',
+      business_name: '',
     },
   });
 
@@ -116,6 +114,7 @@ const RegisterProvider = ({ route, navigation }: any) => {
       setProvider(provider)
       setValue('first_name', provider?.first_name);
       setValue('last_name', provider?.last_name);
+      setValue('business_name', provider?.business_name);
       setValue('phone', cleanedPhone);
       setValue('nida', provider?.nida)
       setValue('email', provider?.user.email)
@@ -387,6 +386,39 @@ const RegisterProvider = ({ route, navigation }: any) => {
             {errors.phone && (
               <Text style={stylesGlobal.errorMessage}>
                 {t('auth:phoneRequired')}
+              </Text>
+            )}
+          </BasicView>
+
+          <BasicView>
+            <Text
+              style={[
+                stylesGlobal.inputFieldTitle,
+                stylesGlobal.marginTop20,
+              ]}>
+              {t('auth:businessName')}
+            </Text>
+
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInputField
+                placeholderTextColor={colors.alsoGrey}
+                  placeholder={t('auth:enterBusinessName')}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name="business_name"
+            />
+
+            {errors.business_name && (
+              <Text style={stylesGlobal.errorMessage}>
+                {t('auth:businessNameRequired')}
               </Text>
             )}
           </BasicView>

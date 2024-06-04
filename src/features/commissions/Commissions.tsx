@@ -7,6 +7,7 @@ import { useAppDispatch } from '../../app/store'
 import { useSelector, RootStateOrAny } from 'react-redux'
 import { formatDate, getStatusBackgroundColor,formatAmountWithCommas } from '../../utils/utilts'
 import { getActiveCommissions, getPaidCommissions } from './CommissionSlice'
+import Tag from '../../components/Tag'
 
 const Commissions = ({navigation}:any) => {
 
@@ -33,8 +34,9 @@ const Commissions = ({navigation}:any) => {
         dispatch(getPaidCommissions(user?.agent?.id));
     }, [dispatch])
 
-
-    const callGetCommissions = React.useCallback(() => {
+ 
+  
+    const callGetCommissions = React.useCallback(() => {    
             console.log('call on refresh',refreshing)
         setRefreshing(true);
         dispatch(getActiveCommissions(user?.agent?.id ));
@@ -69,21 +71,26 @@ const Commissions = ({navigation}:any) => {
                  commission:item
             })}
         >
-            <Text style={{ marginVertical: 10, color: colors.black }}>{t('screens:name')}: {item?.provider || item?.client}</Text>
-            <Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:amount')}:{formatAmountWithCommas(item?.total_commission)}</Text>
+            <Text style={{ marginVertical: 10, color: colors.black }}>{t('screens:name')}: { item.user_type=='Provider'?item?.provider.name: item?.client.name} ({item.user_type})</Text>
+            <Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:amount')}:{formatAmountWithCommas(item?.amount)}</Text>
+            <Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:payment_for')}: {getStatusTranslation(item?.payment_for)}</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View><Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:date')}: {formatDate(item?.date)}</Text></View>
-                <TouchableOpacity
+            
+                <View><Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:date')}: {formatDate(item?.created_at)}</Text></View>
+                <View
                     style={{
                         marginVertical: 10,
                         backgroundColor: getStatusBackgroundColor(item?.status),
                         padding: 8,
                         borderRadius: 10
                     }}
-                ><Text style={{ color: colors.white }}>{getStatusTranslation(item.status)}</Text>
-                </TouchableOpacity>
+                >
+                    
+                    <Text style={{ color: colors.white }}>{getStatusTranslation(item.status)}</Text>
+                </View>
             </View>
         </TouchableOpacity>
+   
     );
 
     return (
@@ -112,7 +119,7 @@ const Commissions = ({navigation}:any) => {
                     <FlatList
                         data={activeTab === 'active' ? activeCommissions : paidCommissions}
                         renderItem={renderRequestItem}
-                        keyExtractor={(item) => item.request_id.toString()}
+                        keyExtractor={(item) => item?.id}
                         showsVerticalScrollIndicator={false}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={callGetCommissions} />
@@ -155,7 +162,7 @@ const styles = StyleSheet.create({
         marginBottom:120
     },
     commissionItem: {
-        height: 150,
+       
         borderRadius: 20,
         paddingHorizontal: 10,
         paddingVertical: 8,

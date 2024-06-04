@@ -205,12 +205,17 @@ export const getStatusBackgroundColor = (status: string) => {
   switch (status) {
     case 'Incomplete' :
     case 'Pending':
+    case 'Pending Approval':
       return colors.orange;
     case 'Unpaid' :
     case 'Rejected':
+    case 'In-Active':
+    case 'Deactivated':
+    case 'Hatumii mfumo':
       return colors.dangerRed;
     case 'Paid':
     case 'Approved':
+    case 'Active':
       return colors.successGreen;
     default:
       return colors.secondary;
