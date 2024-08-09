@@ -7,8 +7,8 @@ import { colors } from '../utils/colors';
   const {isDarkMode} = useSelector(
     (state: RootStateOrAny) => state.theme,
   );
-  const containerBackgroundColor = isDarkMode ? colors.blackBg : colors.lightGrey;
-  const scrollBgBackgroundColor = isDarkMode ? colors.blackBg : colors.whiteBackground;
+  const containerBackgroundColor = isDarkMode ? colors.blackBackground : colors.lightGrey;
+  const scrollBgBackgroundColor = isDarkMode ? colors.blackBackground : colors.whiteBackground;
   const textInputColor = isDarkMode ? 'white' : 'black';
   const buttonText = isDarkMode ? colors.white : colors.primary;
   const borderColor = isDarkMode ? 'gray' : colors.lightGrey;

@@ -6,10 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { RootStateOrAny, useSelector } from 'react-redux';
 import { useAppDispatch } from '../../app/store';
 
-import { findNumber, forgotPassword } from './userSlice';
-
-
-import { Container } from '../../components/Container';
+import { findNumber} from './userSlice';
 import { BasicView } from '../../components/BasicView';
 import { ButtonText } from '../../components/ButtonText';
 import Button from '../../components/Button';

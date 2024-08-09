@@ -12,7 +12,15 @@ import Pdf from 'react-native-pdf';
 import ToastMessage from './ToastMessage';
 
 
-const UploadBusinessDocument = ({businesses,setShowToast,toggleToast,toastMessage, showToast, regDocs, handleDocumentUpload, uploadingDoc,resetModalState }: any) => {
+const UploadBusinessDocument = ({businesses,setShowToast,
+    toggleToast,toastMessage, showToast, regDocs,
+     handleDocumentUpload, 
+     uploadingDoc,resetModalState,
+     uploadedDocuments
+    }: any) => {
+
+        // console.log('regDocs',regDocs)
+        // console.log('uploadedDocuments',uploadedDocuments)
           
    //  console.log('error message',errorMessage)
     const [open, setOpen] = useState(false);
@@ -103,10 +111,12 @@ const UploadBusinessDocument = ({businesses,setShowToast,toggleToast,toastMessag
     return (
 
         <View style={styles.modalContainer}>
+
+         {showToast &&
             <View style={{marginBottom:40}}>
-            {showToast && <ToastMessage message={toastMessage} onClose={toggleToast} />}
+             <ToastMessage message={toastMessage} onClose={toggleToast} />
             </View>
-           
+          } 
             <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>{t('screens:selectDocType')}</Text>
                 <View style={styles.marginDropdown}>

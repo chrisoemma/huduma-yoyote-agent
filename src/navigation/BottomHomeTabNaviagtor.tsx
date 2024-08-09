@@ -61,6 +61,7 @@ export default function BottomHomeTabNavigator() {
     },
     tabBarActiveTintColor: colors.secondary,
     tabBarInactiveTintColor:isDarkMode?colors.white:colors.blackBg,
+    
   });
 
 

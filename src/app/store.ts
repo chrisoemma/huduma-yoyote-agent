@@ -21,6 +21,7 @@ import ChartSlice from '../features/home/ChartSlice';
 import CommissionSlice from '../features/commissions/CommissionSlice';
 import AccountSlice from '../features/account/AccountSlice';
 import professionsSlice from '../features/professionsSlice';
+import LocationSlice from '../components/Location/LocationSlice';
 
 
 
@@ -33,6 +34,7 @@ const reducers = combineReducers({
   charts:ChartSlice,
   commissions:CommissionSlice,
   account:AccountSlice,
+  locations:LocationSlice,
   professions:professionsSlice
 });
 
@@ -40,6 +42,7 @@ const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
 };
+
 
 const persistedReducer = persistReducer(persistConfig, reducers);
 

@@ -323,3 +323,24 @@ export const showErrorWithLineBreaks = (errors) => {
 };
 
 
+
+export const transformArray = (inputArray, labelKey, valueKey) => {
+  if (!inputArray || inputArray.length === 0) {
+    return [];
+  }
+  let resultArray = [];
+
+  inputArray.forEach(item => {
+    let labelValue = {
+      'label': item[labelKey],
+      'value': item[valueKey]
+    };
+    resultArray.push(labelValue);
+  });
+
+  return resultArray;
+};
+
+
+
+

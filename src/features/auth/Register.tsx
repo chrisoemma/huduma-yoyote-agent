@@ -26,6 +26,7 @@ import { BasicView } from '../../components/BasicView';
 import { TextInputField } from '../../components/TextInputField';
 import { useAppDispatch } from '../../app/store';
 import Button from '../../components/Button';
+import messaging from '@react-native-firebase/messaging';
 import { ButtonText } from '../../components/ButtonText';
 import { useTranslation } from 'react-i18next';
 import ToastMessage from '../../components/ToastMessage';
@@ -50,6 +51,7 @@ const RegisterScreen = ({ route, navigation }: any) => {
   const [nidaLoading, setNidaLoading] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('');
   const [confirmError, setConfirmError] = useState('');
+  const [deviceToken, setDeviceToken] = useState('');
 
 
 
@@ -70,6 +72,20 @@ const RegisterScreen = ({ route, navigation }: any) => {
   //     setMessage(status);
   //   }
   // }, [status]);
+
+  useEffect(() => {
+    const retrieveDeviceToken = async () => {
+      try {
+        const token = await messaging().getToken();
+        console.log('new token', token);
+        setDeviceToken(token);
+      } catch (error) {
+        console.log('Error retrieving device token:', error);
+      }
+    };
+
+    retrieveDeviceToken();
+  }, []);
 
 
   useEffect(() => {
@@ -119,6 +135,7 @@ const RegisterScreen = ({ route, navigation }: any) => {
 
   const onSubmit = async (data: any) => {
     data.app_type = 'agent';
+    data.deviceToken = deviceToken; 
 
     setShowToast(false)
 
@@ -132,18 +149,17 @@ const RegisterScreen = ({ route, navigation }: any) => {
     }
 
 
-    setNidaLoading(true)
-    const nidaValidationResult = await validateNIDANumber(data.nida);
-    setNidaLoading(false)
+    //setNidaLoading(true)
+    //const nidaValidationResult = await validateNIDANumber(data.nida);
+   // setNidaLoading(false)
 
-    if (!nidaValidationResult.obj.error || nidaValidationResult.obj.error.trim() === '') {
+    // if (!nidaValidationResult.obj.error || nidaValidationResult.obj.error.trim() === '') {
       setShowToast(false)
       dispatch(userRegiter(data))
         .unwrap()
-        .then(result => {
+        .then(result =>{
           console.log('resultsss', result);
           if (result.status) {
-
             ToastAndroid.show(`${t('auth:userCreatedSuccessfully')}`, ToastAndroid.LONG);
             navigation.navigate('Verify', { nextPage: 'Verify' });
           } else {
@@ -163,11 +179,11 @@ const RegisterScreen = ({ route, navigation }: any) => {
             }
           }
         })
-    } else {
-      setNidaError(t('auth:nidaDoesNotExist'))
-      setShowToast(true)
-      showToastMessage(t('screens:errorOccured'));
-    }
+    // } else {
+    //   setNidaError(t('auth:nidaDoesNotExist'))
+    //   setShowToast(true)
+    //   showToastMessage(t('screens:errorOccured'));
+    // }
 
   }
 

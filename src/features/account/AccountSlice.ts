@@ -105,6 +105,13 @@ const AccountSlice = createSlice({
     clearMessage(state: any) {
       state.status = null;
     },
+    changeDocStatus: (state, action) => {
+      const { docId, docStatus } = action.payload;
+      const document = state.documents.find(doc => doc.id === Number(docId));
+      if (document) {
+        document.status = docStatus;
+      }
+    }
   },
   extraReducers: builder => {
 
@@ -134,8 +141,8 @@ const AccountSlice = createSlice({
     });
     builder.addCase(getAgentDocumentToRegister.fulfilled, (state, action) => {
 
-      console.log('Full fielddddd');
-       console.log('payload data',action.payload);
+    //  console.log('Full fielddddd');
+     //  console.log('payload data',action.payload);
 
       if (action.payload.status) {
         state.documentToRegister = action.payload.data.documents;
@@ -232,6 +239,6 @@ const AccountSlice = createSlice({
 
 });
 
-export const { clearMessage } = AccountSlice.actions;
+export const { clearMessage,changeDocStatus } = AccountSlice.actions;
 
 export default AccountSlice.reducer;

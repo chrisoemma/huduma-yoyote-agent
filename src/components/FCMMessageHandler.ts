@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import { useSelector, RootStateOrAny } from 'react-redux';
-import { setUserAccountStatus } from '../features/auth/userSlice';
+import { changeNidaStatus, logoutOtherDevice, setUserChanges, updateAgentChanges } from '../features/auth/userSlice';
 import { useAppDispatch } from '../app/store';
+import { changeDocStatus } from '../features/account/AccountSlice';
 
 const FCMMessageHandler = () => {
   const { user } = useSelector((state: RootStateOrAny) => state.user);
@@ -24,17 +25,27 @@ const FCMMessageHandler = () => {
   }, []);
 
   const handleRemoteMessage = remoteMessage => {
+    
     const { data,notification } = remoteMessage;
-
-     console.log('datatatatata',data);
 
     if (data && data.type) {
       const type = data.type;
-      // Perform actions based on the type
       switch (type) {
-        case 'user_status_changed':
-          dispatch(setUserAccountStatus(data));
+        case 'account_changed':
+          const userChanges = data.userChanges ? JSON.parse(data.userChanges) : {};
+          const agentChanges = data.agentChanges ? JSON.parse(data.agentChanges) : {};
+          dispatch(setUserChanges(userChanges));
+          dispatch(updateAgentChanges(agentChanges))
           break;
+          case 'logout_device':
+            dispatch(logoutOtherDevice());
+            break;
+          case 'nida_status_chaged':
+            dispatch(changeNidaStatus(data.nidaStatus))
+            break;
+          case 'doc_status':
+            dispatch(changeDocStatus({ docId:data.docId, docStatus:data.docStatus }));
+          break
         default:
           // Handle other types or default case
           break;

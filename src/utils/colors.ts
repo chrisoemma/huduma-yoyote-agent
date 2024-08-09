@@ -19,6 +19,7 @@ export const colors = {
     whiteBackground:'#F7F6FF',
     lightView:'#DFF3F3',
     darkModeBackground:'#949494',
+    blackBackground:'#1b1e1f',
     purple:'#9039db',
     orange:'#fcba03',
     blue:'#22538f',

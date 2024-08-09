@@ -264,6 +264,7 @@ const userSlice = createSlice({
   initialState: {
     user: {} as UserData,
     config: {},
+    residence:{},
     isFirstTimeUser:true,
     deviceToken:'',
     loading: false,
@@ -279,9 +280,37 @@ const userSlice = createSlice({
     setFirstTime: (state, action) => {
       state.isFirstTimeUser = action.payload;
     },
-    setUserAccountStatus:(state,action)=>{
-      state.user.status=action.payload.userStatus
-      state.user.agent.status=action.payload.modalStatus
+    // setUserAccountStatus:(state,action)=>{
+    //   state.user.status=action.payload.userStatus
+    //   state.user.agent.status=action.payload.modalStatus
+    // },
+
+    setUserChanges: (state, action) => {
+      if (Object.keys(action.payload).length > 0) {
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
+      }
+    },
+
+    logoutOtherDevice(state:any){
+      logout(state);
+    },
+
+    updateAgentChanges: (state, action) => {
+      if (Object.keys(action.payload).length > 0) {
+        state.user.agent = {
+          ...state.user.agent,
+          ...action.payload,
+        };
+      }
+    },
+    changeNidaStatus: (state, action) => {
+      const latestStatus = state?.user?.agent?.nida_statuses[state?.user?.agent?.nida_statuses?.length - 1];
+      if (latestStatus) {
+        latestStatus.status = action.payload;
+      }
     },
   },
   extraReducers: builder => {
@@ -298,6 +327,7 @@ const userSlice = createSlice({
       if (action.payload.status) {
         state.user = action.payload.user as any;
         state.user.token = action.payload.token;
+        state.residence=action.payload.location;
         state.config = action.payload.config;
         AsyncStorage.setItem('token', action.payload.token);
         updateStatus(state, '');
@@ -535,6 +565,12 @@ const userSlice = createSlice({
         ...state.user,
         ...action.payload.data.user,
       };
+
+      state.residence={
+        ...state.residence,
+        ...action.payload.data.location
+       }
+
       if (action.payload.data.token) {
         state.user.token = action.payload.data.token;
       }
@@ -581,6 +617,6 @@ const userSlice = createSlice({
 });
 
 
-export const { userLogout, clearMessage,setFirstTime,setUserAccountStatus } = userSlice.actions;
+export const { userLogout,logoutOtherDevice,changeNidaStatus, clearMessage,setFirstTime,setUserChanges,updateAgentChanges} = userSlice.actions;
 
 export default userSlice.reducer;

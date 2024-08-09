@@ -64,9 +64,9 @@ const Navigation = () => {
     ...DarkTheme,
     colors: {
       ...DarkTheme.colors,
-      background: colors.blackBg,
+      background: colors.blackBackground,
       text: colors.white,
-      inputText:colors.blackBg
+      inputText:colors.blackBackground
     },
   };
 

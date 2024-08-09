@@ -30,7 +30,7 @@ const DrawerRow = styled.TouchableOpacity`
   flex-direction: row;
   padding-vertical: 2px;
   align-items: center;
-  background-color: ${props => props.isDarkMode ? colors.black :colors.whiteBackground};
+  background-color: ${props => props.isDarkMode ? colors.blackBackground :colors.whiteBackground};
 `;
 
 const DrawerIconContainer = styled.View`
@@ -54,11 +54,11 @@ const CustomDrawerContent = (props: any) => {
   React.useEffect(() => {
   }, [user]);
 
-  const phoneNumber='+255714055666';
+  const phoneNumber='+255684335955';
    
   let  drawerItems=[];
   
-  if(user.agent && user.status=='Active'){
+  if(user.agent && user?.agent?.status=='Active'){
 
       drawerItems = [
     {
@@ -67,7 +67,7 @@ const CustomDrawerContent = (props: any) => {
       language:'home',
       screen: 'Home',
       options: {
-        screen: 'BottomHomeTabNavigator',
+        screen: 'Home',
       },
     },
 
@@ -124,15 +124,7 @@ const CustomDrawerContent = (props: any) => {
             height: 60,
           }}
         />
-        <View>
-          <Text style={{
-            marginTop: 10,
-            color:colors.white,
-            fontWeight: 'bold'
-          }}>
-           Espe Service
-          </Text>
-        </View>
+ 
       </DrawerHeader>
 
       <DrawerRowsContainer>

@@ -23,6 +23,7 @@ import { BasicView } from '../../components/BasicView';
 import Button from '../../components/Button';
 import { ButtonText } from '../../components/ButtonText';
 import { useTranslation } from 'react-i18next';
+import messaging from '@react-native-firebase/messaging'
 
 const LoginScreen = ({ route, navigation }: any) => {
 
@@ -44,6 +45,7 @@ const LoginScreen = ({ route, navigation }: any) => {
   const phoneInput = useRef<PhoneInput>(null);
 
   const [message, setMessage] = useState('');
+  const [deviceToken, setDeviceToken] = useState('');
 
   useEffect(() => {
     console.log(user);
@@ -57,6 +59,23 @@ const LoginScreen = ({ route, navigation }: any) => {
       setMessage('');
     }, 5000);
   };
+
+
+
+  useEffect(() => {
+    const retrieveDeviceToken = async () => {
+      try {
+   
+        const token = await messaging().getToken();
+        console.log('new token',token);
+        setDeviceToken(token);
+      } catch (error) {
+        console.log('Error retrieving device token:', error);
+      }
+    };
+
+    retrieveDeviceToken();
+  }, []);
 
   const {
     control,
@@ -72,6 +91,7 @@ const LoginScreen = ({ route, navigation }: any) => {
 
     try {
      data.app_type='agent';
+     data.deviceToken = deviceToken;
     const result = await dispatch(userLogin(data)).unwrap(); 
 
     if (result.status) {

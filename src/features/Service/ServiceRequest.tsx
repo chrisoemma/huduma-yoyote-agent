@@ -166,7 +166,6 @@ const ServiceRequest = ({ navigation, route }:any) => {
                         >
                                 <Text style={styles.title}>Hello</Text>
 
-
                                 <View style={globalStyles.subCategory}>
                                     <ContentServiceList
                                         data={subServices}

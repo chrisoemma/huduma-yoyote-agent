@@ -17,6 +17,7 @@ import messaging from '@react-native-firebase/messaging';
 import { postUserDeviceToken } from "../features/auth/userSlice";
 import { useAppDispatch } from "../app/store";
 import { useSelector } from "react-redux";
+import { Platform } from "react-native";
 
 
 const AppStack = () => {
@@ -34,27 +35,46 @@ const AppStack = () => {
 
   
   useEffect(() => {
-    const requestPermission = async () => {
-      try {
-        await messaging().requestPermission();
-        retrieveDeviceToken();
-      } catch (error) {
-        console.log('Permission denied:', error);
-      }
-    };
     const retrieveDeviceToken = async () => {
-   
-      try {           
+      try {
         const token = await messaging().getToken();
         console.log('Device Token:', token);
-    
-        dispatch(postUserDeviceToken({userId:user?.id,deviceToken:token}))
+        if (user) {
+          dispatch(postUserDeviceToken({ userId: user?.id, deviceToken: token }));
+        }
       } catch (error) {
         console.log('Error retrieving device token:', error);
       }
     };
-    requestPermission();
-  }, []);
+
+    const handleTokenRefresh = async (token) => {
+      console.log('New token:', token);
+      if (user) {
+        dispatch(postUserDeviceToken({ userId: user?.id, deviceToken: token }));
+      }
+    };
+    if (Platform.OS === 'ios') {
+      const requestPermission = async () => {
+        try {
+          await messaging().requestPermission();
+          retrieveDeviceToken();
+        } catch (error) {
+          console.log('Permission denied:', error);
+        }
+      };
+
+      requestPermission();
+    } else {
+      retrieveDeviceToken();
+    }
+
+    // Listen for token refresh
+    const unsubscribeOnTokenRefresh = messaging().onTokenRefresh(handleTokenRefresh);
+
+    return () => {
+      unsubscribeOnTokenRefresh();
+    };
+  }, [dispatch, user]);
   
 
   return (

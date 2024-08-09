@@ -20,7 +20,7 @@ const Account = ({ navigation }: any) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { loading, user } = useSelector(
+  const { loading, user,residence } = useSelector(
     (state: RootStateOrAny) => state.user,
   );
 
@@ -37,13 +37,10 @@ const Account = ({ navigation }: any) => {
   const [uploadingPic, setUploadingPic] = useState(false)
   const [message, setMessage] = useState('');
 
-
-
   const data = {
     image_url: '',
     doc_type: ''
   }
-
 
   const makeid = (length: any) => {
     let result = '';
@@ -71,7 +68,7 @@ const Account = ({ navigation }: any) => {
     getLocationName(user?.agent?.latitude, user?.agent?.longitude)
       .then((locationName) => {
         setLocationName(locationName);
-        console.log('Location Name:', locationName);
+       // console.log('Location Name:', locationName);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -168,6 +165,9 @@ const Account = ({ navigation }: any) => {
     }
   };
 
+
+  const lastNidaStatus = user?.agent?.nida_statuses?.[user?.agent?.nida_statuses.length - 1]?.status;
+
   const phoneNumber = `${user?.phone}`;
   return (
     <SafeAreaView
@@ -185,7 +185,7 @@ const Account = ({ navigation }: any) => {
           type="info"
         />) : (<View />)}
 
-        {user.status == 'In Active' ? (<Notification
+        {user.agent?.status == 'Deactivated' ? (<Notification
           message={`${t('screens:accountDeactivated')}`}
           type="danger"
         />) : (<View />)}
@@ -218,10 +218,9 @@ const Account = ({ navigation }: any) => {
             </TouchableOpacity>
           )}
 
-
           <TouchableOpacity style={{ marginRight: 10, alignSelf: 'flex-end' }}
             onPress={() => {
-              if (user?.status !== 'In Active') {
+              if (user?.agent?.status !== 'Deactivated') {
                 navigation.navigate('Edit Account', {
                   client: user?.client
                 });
@@ -294,18 +293,47 @@ const Account = ({ navigation }: any) => {
             {user?.email == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey }}> {t('screens:noEmail')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{user?.email}</Text>)
             }
           </TouchableOpacity>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:location')}</Text>
+          {/* <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:location')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
             <Icon
               name="enviroment"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            {
-              locationName == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey }}> {t('screens:noresidenceData')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{breakTextIntoLines(locationName, 20)}</Text>)
-            }
+           {
+              locationName =='' ? (<Text style={{ color:  colors.dangerRed}}> {t('screens:noresidenceData')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{breakTextIntoLines(locationName, 20)}</Text>)
+            } 
+          
+          </TouchableOpacity> */}
 
+
+
+        {user?.agent ?(
+          <>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:residentialLocation')}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row',marginBottom:10}}>
+            <Icon
+              name="enviroment"
+              color={isDarkMode ? colors.white : colors.black}
+              size={25}
+            />
+  {
+   (residence === null || Object.keys(residence || {}).length === 0) ? 
+ 
+    (<Text style={{color:colors.dangerRed}}>{t('screens:noresidenceData')}</Text>) : 
+ 
+    (
+      <Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>
+        {breakTextIntoLines(
+          `${residence?.region?.region_name}, ${residence?.district?.district_name}, ${residence?.ward?.ward_name}, ${residence?.area?.place_name}`,
+          20
+        )}
+      </Text>
+    )
+}
           </TouchableOpacity>
+          </>
+        ):(<></>)}
           <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:nida')}</Text>
 
           <TouchableOpacity style={{ flexDirection: 'row' }}
@@ -317,8 +345,9 @@ const Account = ({ navigation }: any) => {
             />
             <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{user?.nida}</Text>
           </TouchableOpacity>
+          <Text style={{color:lastNidaStatus=='A.Valid'?colors.successGreen:colors.dangerRed}}>{lastNidaStatus=='A.Valid'?t('screens:verified'):t('screens:unVefified')}</Text>
         </View>
-        {user.agent && user.status !=='In Active' ? (
+        {user.agent && user.agent?.status !=='Deactivated' ? (
           <TouchableOpacity
             onPress={() => {
               navigation.navigate('My Documents', {

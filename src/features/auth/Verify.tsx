@@ -31,9 +31,9 @@ const VerifyScreen = ({ route, navigation }: any) => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '']);
 
 
-  useEffect(() => {
+  // useEffect(() => {
 
-  }, [user]);
+  // }, [user]);
 
 
   const inputs = Array(4).fill(0).map((_, i) => React.createRef());
@@ -97,7 +97,7 @@ const VerifyScreen = ({ route, navigation }: any) => {
   const resendLink = async () => {
     const { phone } = route?.params;
     const data = {
-      phone: phone
+      phone: user?.phone?user?.phone:phone
     }
     const result = await dispatch(resendOTP(data)).unwrap();
     if (result.status) {

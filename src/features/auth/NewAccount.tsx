@@ -19,7 +19,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { RootStateOrAny, useSelector } from 'react-redux';
 import { multiRegister, setFirstTime, userLogout, userRegiter } from './userSlice';
 import { globalStyles } from '../../styles/global';
-import { useTogglePasswordVisibility } from '../../hooks/useTogglePasswordVisibility';
+
 import PhoneInput from 'react-native-phone-number-input';
 import { BasicView } from '../../components/BasicView';
 import { TextInputField } from '../../components/TextInputField';
@@ -30,7 +30,7 @@ import { ButtonText } from '../../components/ButtonText';
 import { useTranslation } from 'react-i18next';
 import { formatErrorMessages, showErrorWithLineBreaks, transformDataToDropdownOptions, validateNIDANumber } from '../../utils/utilts';
 import { colors } from '../../utils/colors';
-import DropDownPicker from 'react-native-dropdown-picker';
+
 import { getProfessions } from '../professionsSlice';
 import ToastMessage from '../../components/ToastMessage';
 
@@ -41,32 +41,22 @@ const NewAccount = ({ route, navigation }: any) => {
     (state: RootStateOrAny) => state.user,
   );
 
-  const { professions, profesionsLoading } = useSelector(
-    (state: RootStateOrAny) => state.professions,
-  );
-
-
-  const [confirmPassword, setConfirmPassword] = useState('');
-
   const { selectedLanguage } = useSelector(
     (state: RootStateOrAny) => state.language,
   );
   useEffect(() => {
     dispatch(getProfessions({ language: selectedLanguage }));
-
   }, [selectedLanguage])
 
-  const { passwordVisibility, rightIcon, handlePasswordVisibility } =
-    useTogglePasswordVisibility();
 
   const phoneInput = useRef<PhoneInput>(null);
   const [message, setMessage] = useState('');
   const [nidaError, setNidaError] = useState('');
-  const [confirmError, setConfirmError] = useState('');
+;
   const [nidaLoading, setNidaLoading] = useState(false)
   const [open, setOpen] = useState(false);
   const [value, setProffValue] = useState([]);
-  const [designationError, setDesignationError] = useState('')
+
 
   const WIDTH = Dimensions.get("window").width;
 
@@ -154,29 +144,14 @@ const NewAccount = ({ route, navigation }: any) => {
 
   const onSubmit = async (data: any) => {
 
-    // if (errors.phone){
-    //   setShowToast(true)
-    //   showToastMessage(t('screens:errorOccured'));
-    //   return 
-    // }
+  
 
-    if (value.length < 1) {
-      setDesignationError(`${t('auth:designationError')}`)
+    if (errors.phone){
       setShowToast(true)
       showToastMessage(t('screens:errorOccured'));
-      return
-    } else {
-      setDesignationError('');
+      return 
     }
 
-    if (data.password !== data.confirmPassword) {
-      setConfirmError(t('auth:passwordMismatch'));
-      setShowToast(true)
-      showToastMessage(t('screens:errorOccured'));
-      return;
-    } else {
-      setConfirmError('');
-    }
 
     data.app_type = 'agent';
     if(user?.provider){
@@ -218,13 +193,14 @@ const NewAccount = ({ route, navigation }: any) => {
           console.log(rejectedValueOrSerializedError);
         });
        }else{
-    setNidaLoading(true)
-    const nidaValidationResult = await validateNIDANumber(data.nida);
-    setNidaLoading(false)
+
+    //setNidaLoading(true)
+    // const nidaValidationResult = await validateNIDANumber(data.nida);
+    // setNidaLoading(false)
 
     setShowToast(false)
 
-    if (!nidaValidationResult.obj.error || nidaValidationResult.obj.error.trim() === '') {
+  //  if (!nidaValidationResult.obj.error || nidaValidationResult.obj.error.trim() === '') {
 
       dispatch(multiRegister({ data, userId: user?.id }))
         .unwrap()
@@ -236,6 +212,8 @@ const NewAccount = ({ route, navigation }: any) => {
           } else {
             if (result.error) {
          
+               console.log('errorr',result);
+
               setDisappearMessage(result.error
               );
               setShowToast(true)
@@ -254,17 +232,15 @@ const NewAccount = ({ route, navigation }: any) => {
           console.log(rejectedValueOrSerializedError);
         });
 
-    } else {
-      setNidaError(t('auth:nidaDoesNotExist'))
-      console.log('NIDA validation failed:', nidaValidationResult.error);
-      setShowToast(true)
-      showToastMessage(t('screens:errorOccured'));
-    }
+    // } else {
+    //   setNidaError(t('auth:nidaDoesNotExist'))
+    //   console.log('NIDA validation failed:', nidaValidationResult.error);
+    //   setShowToast(true)
+    //   showToastMessage(t('screens:errorOccured'));
+    // }
 
   }
   };
-
-
 
   const stylesGlobal = globalStyles();
 
@@ -284,10 +260,10 @@ const NewAccount = ({ route, navigation }: any) => {
           <Text style={stylesGlobal.largeHeading}>{t('auth:register')}</Text>
         </View>
         <View>
-        
+{/*         
           <BasicView style={stylesGlobal.centerView}>
             <Text style={stylesGlobal.errorMessage}>{message}</Text>
-          </BasicView>
+          </BasicView> */}
 
           <BasicView>
             <Text
@@ -326,13 +302,20 @@ const NewAccount = ({ route, navigation }: any) => {
                   }}
                   value={value}
                   keyboardType="phone-pad"
-                  editable={user?.agent?false:true}
+                  editable={!user?.provider && !user?.employee}
                   style={user?.agent? styles.disabledTextInput : null}
 
                 />
               )}
               name="phone"
             />
+
+    {user?.phone_verified_at && (
+           <Text style={{color:colors.successGreen}}>
+           {t('screens:phoneVerified')}
+           </Text>
+      )}
+
             {errors.phone && (
               <Text style={stylesGlobal.errorMessage}>
                 {t('auth:phoneRequired')}
@@ -356,12 +339,12 @@ const NewAccount = ({ route, navigation }: any) => {
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInputField
-                placeholderTextColor={colors.alsoGrey}
+                  placeholderTextColor={colors.alsoGrey}
                   placeholder={t('auth:enterFirstName')}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
-                  editable={user?.agent?false:true}
+                  editable={!user?.provider && !user?.employee}
                   style={user?.agent? styles.disabledTextInput : null}
                 />
               )}
@@ -396,7 +379,8 @@ const NewAccount = ({ route, navigation }: any) => {
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
-                  editable={user?.agent?false:true}
+              
+                  editable={!user?.provider && !user?.employee}
                   style={user?.agent? styles.disabledTextInput : null}
                 />
               )}
@@ -440,7 +424,7 @@ const NewAccount = ({ route, navigation }: any) => {
                   onChangeText={onChange}
                   value={value}
                   keyboardType='numeric'
-                  editable={user?.agent?false:true}
+                  editable={!user?.provider && !user?.employee}
                   style={user?.agent? styles.disabledTextInput : null}
                 />
               )}

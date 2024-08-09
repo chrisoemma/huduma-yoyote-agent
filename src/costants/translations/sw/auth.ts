@@ -54,7 +54,7 @@ export default {
     designationError:'Tafadhali, changua Taaluma yako',
     emailRequired:'Barua pepe sahihi inahitajika',
     nidaEmptyError:'Namba ya NIDA inahitajika',
-     
+    dontHaveAcount:' Hauna akaunti? Jisajili',
     resendOTP:'Tuma tena kodi',
     businessName:'Jina la Biashara',
     enterBusinessName:'Ingiza jina la Biashara',
