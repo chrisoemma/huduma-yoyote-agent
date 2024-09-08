@@ -10,6 +10,8 @@ import { useTranslation } from 'react-i18next';
 import Account from '../features/account/Account';
 import MyRegisters from '../features/registers/MyRegisters';
 import { useSelector,RootStateOrAny } from 'react-redux';
+import BadgeIcon from '../components/BadgeIcon';
+
 
 
 const Tab = createBottomTabNavigator();
@@ -40,6 +42,12 @@ export default function BottomHomeTabNavigator() {
   const { isDarkMode } = useSelector(
     (state: RootStateOrAny) => state.theme,
 );
+
+const notifications = useSelector((state: RootStateOrAny) => state.notificationsAgent.notifications);
+
+const myRegistersBadgeCount = notifications.filter(notification => notification.type === 'MyRegisters' && !notification.viewed).length;
+const accountBadgeCount = notifications.filter(notification => notification.type === 'Account' && !notification.viewed).length;
+
   
   const { t } = useTranslation();
 
@@ -47,17 +55,20 @@ export default function BottomHomeTabNavigator() {
     headerShown: false,
     tabBarIcon: ({ focused, color, size }: any) => {
       let iconName;
+      let badgeCount = 0;
   
       if (route.name === 'Home') {
         iconName = 'home';
         return <Icon name={iconName as string} size={size} color={color} />;
       } else if (route.name === 'MyRegisters') {
         iconName = 'rotate-3d-variant';
+        badgeCount = myRegistersBadgeCount;
       } else if (route.name === 'Account') {
         iconName = 'account-circle';
+        badgeCount = accountBadgeCount;
       } 
       // You can return any component that you like here!
-      return <FontAwesome5 name={iconName as string} size={size} color={color} />;
+      return <BadgeIcon name={iconName as string} size={size} color={color} badgeCount={badgeCount} />;
     },
     tabBarActiveTintColor: colors.secondary,
     tabBarInactiveTintColor:isDarkMode?colors.white:colors.blackBg,

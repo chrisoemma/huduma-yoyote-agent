@@ -7,12 +7,9 @@ import { useAppDispatch } from '../../app/store'
 import { useSelector, RootStateOrAny } from 'react-redux'
 import { formatDate, getStatusBackgroundColor,formatAmountWithCommas } from '../../utils/utilts'
 import { getActiveCommissions, getPaidCommissions } from './CommissionSlice'
-import Tag from '../../components/Tag'
 
 const Commissions = ({navigation}:any) => {
 
-
-    
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
 
@@ -57,40 +54,47 @@ const Commissions = ({navigation}:any) => {
     };
 
     const getStatusTranslation = (status: string) => {
-        return t(`screens:${status}`);
+        const formattedStatus = status.replace(/-/g, '');
+        return t(`screens:${formattedStatus}`);
     };
-
 
     const stylesGlobal = globalStyles();
 
-    const renderRequestItem = ({ item }:any) => (
-
+    const renderRequestItem = ({ item }: any) => (
         <TouchableOpacity
-            style={[styles.commissionItem, { backgroundColor: isDarkMode ? colors.darkModeBackground : colors.white }]}
-            onPress={()=>navigation.navigate('Commission Details',{
-                 commission:item
+            style={[
+                styles.commissionItem,
+                { backgroundColor: isDarkMode ? colors.darkModeBackground : colors.white }
+            ]}
+            onPress={() => navigation.navigate('Commission Details', {
+                commission: item
             })}
         >
-            <Text style={{ marginVertical: 10, color: colors.black }}>{t('screens:name')}: { item.user_type=='Provider'?item?.provider.name: item?.client.name} ({item.user_type})</Text>
-            <Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:amount')}:{formatAmountWithCommas(item?.amount)}</Text>
-            <Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:payment_for')}: {getStatusTranslation(item?.payment_for)}</Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            
-                <View><Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:date')}: {formatDate(item?.created_at)}</Text></View>
+            <Text style={[styles.nameText,{ color: isDarkMode ? colors.white : colors.black }]}>
+                {t('screens:name')}: {item.user_type == 'Provider' ? item?.provider.name : item?.client.name} ({getStatusTranslation(item.user_type)})
+            </Text>
+            <Text style={[styles.amountText,{color: isDarkMode ? colors.white : colors.black,}]}>
+                {t('screens:amount')}: {formatAmountWithCommas(item?.amount)}
+            </Text>
+            <Text style={[styles.paymentForText,{color: isDarkMode ? colors.white : colors.black}]}>
+                {t('screens:payment_for')}: {getStatusTranslation(item?.payment_for)}
+            </Text>
+            <View style={styles.row}>
+                <View>
+                    <Text style={[styles.dateText,{color: isDarkMode ? colors.white : colors.black,}]}>
+                        {t('screens:date')}: {formatDate(item?.created_at)}
+                    </Text>
+                </View>
                 <View
-                    style={{
-                        marginVertical: 10,
-                        backgroundColor: getStatusBackgroundColor(item?.status),
-                        padding: 8,
-                        borderRadius: 10
-                    }}
+                    style={[
+                        styles.statusContainer,
+                        { backgroundColor: getStatusBackgroundColor(item?.status) }
+                    ]}
                 >
-                    
-                    <Text style={{ color: colors.white }}>{getStatusTranslation(item.status)}</Text>
+                    <Text style={styles.statusText}>{getStatusTranslation(item.status)}</Text>
                 </View>
             </View>
         </TouchableOpacity>
-   
     );
 
     return (
@@ -154,6 +158,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: colors.primary,
         padding: 10,
+        fontFamily: 'Prompt-Regular',
         marginRight: 5
     },
 
@@ -162,16 +167,53 @@ const styles = StyleSheet.create({
         marginBottom:120
     },
     commissionItem: {
-       
         borderRadius: 20,
         paddingHorizontal: 10,
-        paddingVertical: 8,
+        paddingVertical: 12,
         marginHorizontal: 8,
         marginVertical: 5,
-        elevation:2
-
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        fontFamily: 'Prompt-Regular',
     },
-
+    nameText: {
+        marginVertical:5,
+        fontFamily: 'Prompt-Bold',
+        fontSize: 14,
+    },
+    amountText:{
+        marginVertical:5,
+        fontFamily: 'Prompt-Regular',
+        fontSize: 14,
+    },
+    paymentForText: {
+        marginVertical:5,
+        fontFamily: 'Prompt-Regular',
+        fontSize: 14,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    dateText:{
+        marginVertical:5,
+        fontFamily: 'Prompt-Regular',
+        fontSize: 14,
+    },
+    statusContainer:{
+        marginVertical:5,
+        padding: 8,
+        borderRadius: 10,
+    },
+    statusText:{
+        color: colors.white,
+        fontFamily: 'Prompt-Regular',
+        fontSize: 14,
+    },
 })
 
 

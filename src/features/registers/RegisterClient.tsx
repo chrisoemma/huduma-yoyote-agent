@@ -28,6 +28,7 @@ import { ButtonText } from '../../components/ButtonText';
 import { useTranslation } from 'react-i18next';
 import { createClient, updateClient } from './RegisterSlice';
 import { validateTanzanianPhoneNumber } from '../../utils/utilts';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 
 const RegisterClient = ({ route, navigation }: any) => {
@@ -110,17 +111,15 @@ const RegisterClient = ({ route, navigation }: any) => {
       dispatch(updateClient({ data: data, clientId: client?.id }))
         .unwrap()
         .then(result => {
-          console.log('resultsss', result);
           if (result.status) {
             console.log('excuted this true block')
-            ToastAndroid.show(`${t('screens:updatedSuccessfully')}`, ToastAndroid.LONG);
+            ToastNotification(`${t('screens:updatedSuccessfully')}`, 'success','long');
             navigation.navigate('MyRegisters');
           }else{
             if (result.error) {
-              setDisappearMessage(result.error
-              );
+              ToastNotification(`${result.error}`, 'danger','long');
             } else {
-              setDisappearMessage(result.message);
+              ToastNotification(`${result.message}`, 'danger','long');
             }
           
           }
@@ -133,15 +132,13 @@ const RegisterClient = ({ route, navigation }: any) => {
         .then(result => {
           console.log('resultsss', result);
           if (result.status) {
-            console.log('excuted this true block')
-            ToastAndroid.show(`${t('screens:createdSuccessfully')}`, ToastAndroid.SHORT);
+            ToastNotification(`${t('screens:createdSuccessfully')}`, 'success','long');
             navigation.navigate('MyRegisters');
           }else{
             if (result.error) {
-              setDisappearMessage(result.error
-              );
+              ToastNotification(`${result.error}`, 'success','long');
             } else {
-              setDisappearMessage(result.message);
+              ToastNotification(`${result.message}`, 'success','long');
             }
           }
         })

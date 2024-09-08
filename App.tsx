@@ -6,6 +6,7 @@ import { persistStore } from 'redux-persist';
 import Navigation from './src/navigation';
 import store from './src/app/store';
 import { MenuProvider } from 'react-native-popup-menu'; 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 
@@ -18,12 +19,14 @@ const App = () => {
   return (
     
     <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
-    <MenuProvider>
-        <Navigation />
-       </MenuProvider>
-    </PersistGate>
-  </Provider>
+      <PersistGate loading={null} persistor={persistor}>
+        <MenuProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Navigation />
+          </GestureHandlerRootView>
+        </MenuProvider>
+      </PersistGate>
+    </Provider>
      
   
   );

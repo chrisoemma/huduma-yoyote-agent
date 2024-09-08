@@ -22,6 +22,7 @@ import CommissionSlice from '../features/commissions/CommissionSlice';
 import AccountSlice from '../features/account/AccountSlice';
 import professionsSlice from '../features/professionsSlice';
 import LocationSlice from '../components/Location/LocationSlice';
+import NotificationAgentSlice from '../features/Notifications/NotificationAgentSlice';
 
 
 
@@ -35,7 +36,8 @@ const reducers = combineReducers({
   commissions:CommissionSlice,
   account:AccountSlice,
   locations:LocationSlice,
-  professions:professionsSlice
+  professions:professionsSlice,
+  notificationsAgent:NotificationAgentSlice
 });
 
 const persistConfig = {

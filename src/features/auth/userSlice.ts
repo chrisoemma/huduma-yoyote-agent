@@ -61,6 +61,21 @@ export const userLogin = createAsyncThunk(
   },
 );
 
+export const multiAccountByRegister = createAsyncThunk(
+  'users/multiAccountByRegister',
+  async (data) => {
+    const response = await fetch(`${API_URL}/auth/multiaccount_register_password`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return (await response.json());
+  },
+);
+
 export const userRegiter = createAsyncThunk(
   'users/userRegister',
   async (data: UserRegisterDTO) => {
@@ -76,6 +91,9 @@ export const userRegiter = createAsyncThunk(
     return (await response.json()) as UserData;
   },
 );
+
+
+
 
 export const changePassword = createAsyncThunk(
   'users/changePassword',
@@ -517,6 +535,33 @@ const userSlice = createSlice({
           }
         });
         builder.addCase(multiRegister.rejected, (state, action) => {
+          console.log('Rejected');
+          console.log(action.error);
+          state.loading = false;
+          updateStatus(state, '');
+        });
+
+
+        //Multi account  by register
+
+        builder.addCase(multiAccountByRegister.pending, state => {
+          console.log('Pending');
+          state.loading = true;
+          updateStatus(state, '');
+        });
+        builder.addCase(multiAccountByRegister.fulfilled, (state, action) => {
+    
+          state.loading = false;
+          updateStatus(state, '');
+    
+          if (action.payload.status) {
+            state.user = action.payload.user as any;
+            updateStatus(state, '');
+          } else {
+            updateStatus(state, action.payload);
+          }
+        });
+        builder.addCase(multiAccountByRegister.rejected, (state, action) => {
           console.log('Rejected');
           console.log(action.error);
           state.loading = false;

@@ -10,6 +10,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import DocumentPicker, { types } from 'react-native-document-picker';
 import Pdf from 'react-native-pdf';
 import ToastMessage from './ToastMessage';
+import { mediaPermissions } from '../permissions/MediaPermissions';
+import ToastNotification from './ToastNotification/ToastNotification';
 
 
 const UploadBusinessDocument = ({businesses,setShowToast,
@@ -72,6 +74,12 @@ const UploadBusinessDocument = ({businesses,setShowToast,
 
     const selectDoc = async () => {
 
+        const permissionsGranted = await mediaPermissions();
+        if (!permissionsGranted) {
+           ToastNotification(`${t('screens:mediaPermissionNotGranted')}`, 'default', 'long');
+            return;
+        }
+
         try {
             const res = await DocumentPicker.pick({
                 type: [DocumentPicker.types.images],
@@ -98,7 +106,7 @@ const UploadBusinessDocument = ({businesses,setShowToast,
         textData = 'screens:selectBusinesses'
     }
     //
-
+    
     const onChangeValue = ()=>{
 
         if(value!==null){
@@ -107,7 +115,6 @@ const UploadBusinessDocument = ({businesses,setShowToast,
     }
 
    
-
     return (
 
         <View style={styles.modalContainer}>
@@ -124,7 +131,7 @@ const UploadBusinessDocument = ({businesses,setShowToast,
                         searchable={true}
                         zIndex={7000}
                         placeholder={t('screens:selectDocType')}
-                        listMode="SCROLLVIEW"
+                        listMode="MODAL"
                         open={openType}
                         value={valueType}
                         items={doctypes}
@@ -143,7 +150,7 @@ const UploadBusinessDocument = ({businesses,setShowToast,
                                 searchable={true}
                                 zIndex={6000}
                                 placeholder={t(textData)}
-                                listMode="SCROLLVIEW"
+                                listMode="MODAL"
                                 open={open}
                                 value={value}
                                 items={valueType == 1 ? registrationDocs : items}
@@ -157,7 +164,7 @@ const UploadBusinessDocument = ({businesses,setShowToast,
                 ) : <View />}
                 <BasicView style={[stylesGlobal.marginTop20, { marginHorizontal: 10 }]}>
                     <Text
-                        style={[stylesGlobal.inputFieldTitle, { color: 'black' }]}>
+                        style={[stylesGlobal.inputFieldTitle, { color: 'black', fontFamily: 'Prompt-Regular', }]}>
                         {t('screens:documentName')}
                     </Text>
 
@@ -202,7 +209,6 @@ const UploadBusinessDocument = ({businesses,setShowToast,
                 <BasicView>
                     {doc == null ? (<View></View>) : (
                         <View style={stylesGlobal.displayDoc}>
-
 
                             {
                                 doc[0]?.type == "application/pdf" ? (
@@ -259,6 +265,7 @@ const styles = StyleSheet.create({
         margin: 12,
         borderWidth: 1,
         padding: 10,
+        fontFamily: 'Prompt-Regular',
         color:colors.black
     },
     
@@ -269,8 +276,8 @@ const styles = StyleSheet.create({
         width: '95%',
     },
     modalTitle: {
+        fontFamily: 'Prompt-Bold',
         fontSize: 18,
-        fontWeight: 'bold',
         marginBottom: 10,
     },
     uploadArea: {
@@ -287,12 +294,13 @@ const styles = StyleSheet.create({
       },
     uploadedFileName: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Prompt-Bold',
         color: colors.alsoGrey,
         textAlign: 'center',
         marginBottom: 5,
     },
     uploadText: {
+        fontFamily: 'Prompt-Regular',
         fontSize: 16,
         color: colors.alsoGrey,
         textAlign: 'center',
@@ -305,6 +313,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     employeeName: {
+        fontFamily: 'Prompt-Regular',
         fontSize: 16,
         marginBottom: 10,
         color: 'blue',

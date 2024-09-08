@@ -10,8 +10,9 @@ import { useTranslation } from 'react-i18next';
 //import { userLogout } from './../features/auth/userSlice';
 import { colors } from '../utils/colors';
 import { userLogout } from '../features/auth/userSlice';
-import { useDispatch, useSelector,RootStateOrAny } from 'react-redux';
+import { useDispatch, useSelector, RootStateOrAny } from 'react-redux';
 import { makePhoneCall } from '../utils/utilts';
+import { useNavigation } from '@react-navigation/native';
 
 
 
@@ -30,7 +31,7 @@ const DrawerRow = styled.TouchableOpacity`
   flex-direction: row;
   padding-vertical: 2px;
   align-items: center;
-  background-color: ${props => props.isDarkMode ? colors.blackBackground :colors.whiteBackground};
+  background-color: ${props => props.isDarkMode ? colors.blackBackground : colors.whiteBackground};
 `;
 
 const DrawerIconContainer = styled.View`
@@ -47,6 +48,7 @@ const DrawerRowsContainer = styled.View`
 const CustomDrawerContent = (props: any) => {
 
   const { t } = useTranslation();
+  const navigation = useNavigation();
 
   const { user, loading } = useSelector((state: RootStateOrAny) => state.user);
 
@@ -54,65 +56,69 @@ const CustomDrawerContent = (props: any) => {
   React.useEffect(() => {
   }, [user]);
 
-  const phoneNumber='+255684335955';
-   
-  let  drawerItems=[];
-  
-  if(user.agent && user?.agent?.status=='Active'){
+  const phoneNumber = '+255684335955';
 
-      drawerItems = [
-    {
-      name: 'Home',
-      icon: 'home',
-      language:'home',
-      screen: 'Home',
-      options: {
+  let drawerItems = [];
+
+  if (user.agent && user?.agent?.status == 'Active') {
+
+    drawerItems = [
+      {
+        name: 'Home',
+        icon: 'home',
+        language: 'home',
         screen: 'Home',
+        options: {
+          screen: 'Home',
+        },
       },
-    },
 
-    {
-      name: 'Commission',
-      icon: 'cogs',
-      language:'commission',
-      screen: 'Commissions', 
-    },
-    {
-      name: 'Settings',
-      icon: 'cogs',
-      language:'settings',
-      screen: 'Settings',
-      options: {
+      {
+        name: 'Commission',
+        icon: 'money-check-alt',
+        language: 'commission',
+        screen: 'Commissions',
+      },
+      {
+        name: 'Settings',
+        icon: 'cogs',
+        language: 'settings',
         screen: 'Settings',
+        options: {
+          screen: 'Settings',
+        },
       },
-    },
-  ]
+    ]
 
-}
-
+  }
 
 
- const dispatch = useDispatch();
+
+  const dispatch = useDispatch();
 
 
- const confirmLogout = () =>
- Alert.alert(`${t('screens:logout')}`, `${t('screens:areYouSureLogout')}`, [
-   {
-     text: `${t('screens:cancel')}`,
-     onPress: () => console.log('Cancel Logout'),
-     style: 'cancel',
-   },
-   {
-     text: `${t('screens:ok')}`,
-     onPress: () => {
-       dispatch(userLogout());
-     },
-   },
- ]);
+  const confirmLogout = () =>
+    Alert.alert(`${t('screens:logout')}`, `${t('screens:areYouSureLogout')}`, [
+      {
+        text: `${t('screens:cancel')}`,
+        onPress: () => console.log('Cancel Logout'),
+        style: 'cancel',
+      },
+      {
+        text: `${t('screens:ok')}`,
+        onPress: () => {
+          dispatch(userLogout());
+        },
+      },
+    ]);
 
- const WhatsappChatBot =()=>{
+  const WhatsappChatBot = () => {
 
- }
+  }
+
+  const NavigateNotifications = () => {
+    navigation.navigate('Notifications');
+  }
 
   return (
     <DrawerContentScrollView {...props}>
@@ -124,7 +130,7 @@ const CustomDrawerContent = (props: any) => {
             height: 60,
           }}
         />
- 
+
       </DrawerHeader>
 
       <DrawerRowsContainer>
@@ -144,16 +150,39 @@ const CustomDrawerContent = (props: any) => {
                   size={25}
                 />
               </DrawerIconContainer>
-              <Text style={{ color: isDarkMode ? colors.white : colors.black }}>
-              {t(`navigate:${item.language}`)}
-            </Text>
+              <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>
+                {t(`navigate:${item.language}`)}
+              </Text>
             </DrawerRow>
           );
         })}
 
-      <DrawerRow
+        <DrawerRow
           onPress={() => {
-      
+
+            NavigateNotifications();
+          }}
+          isDarkMode={isDarkMode}
+        >
+          <DrawerIconContainer>
+            <FontAwesome5
+              name="bell"
+              color={isDarkMode ? colors.white : colors.alsoGrey}
+              size={25}
+            />
+          </DrawerIconContainer>
+          <Text
+            style={{
+              color: isDarkMode ? colors.white : colors.black,
+              fontFamily: 'Prompt-Regular',
+            }}>
+            {t('screens:notifications')}
+          </Text>
+        </DrawerRow>
+
+        <DrawerRow
+          onPress={() => {
+
             WhatsappChatBot();
           }}
           isDarkMode={isDarkMode}
@@ -168,14 +197,15 @@ const CustomDrawerContent = (props: any) => {
           <Text
             style={{
               color: isDarkMode ? colors.white : colors.black,
+              fontFamily: 'Prompt-Regular',
             }}>
             {t('navigate:whatsapp')}
           </Text>
         </DrawerRow>
 
-          <DrawerRow
+        <DrawerRow
           onPress={() => {
-              makePhoneCall(phoneNumber)
+            makePhoneCall(phoneNumber)
           }}
           isDarkMode={isDarkMode}
         >
@@ -189,6 +219,7 @@ const CustomDrawerContent = (props: any) => {
           <Text
             style={{
               color: isDarkMode ? colors.white : colors.black,
+              fontFamily: 'Prompt-Regular',
             }}>
             {t('navigate:support')}
           </Text>
@@ -209,7 +240,8 @@ const CustomDrawerContent = (props: any) => {
           </DrawerIconContainer>
           <Text
             style={{
-              color: isDarkMode ? colors.white :colors.black, 
+              fontFamily: 'Prompt-Regular',
+              color: isDarkMode ? colors.white : colors.black,
             }}>
             {t('navigate:logout')}
           </Text>

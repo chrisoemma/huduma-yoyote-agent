@@ -24,6 +24,8 @@ export const colors = {
     orange:'#fcba03',
     blue:'#22538f',
     darkYellow:'#747537',
-    blackBg:'#1a1a1a'
+    blackBg:'#1a1a1a',
+    bgColored:'#f1f0fa',
+    darkModeBottomSheet:'#949494'
   };
   

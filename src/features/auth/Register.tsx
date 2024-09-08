@@ -31,6 +31,8 @@ import { ButtonText } from '../../components/ButtonText';
 import { useTranslation } from 'react-i18next';
 import ToastMessage from '../../components/ToastMessage';
 import { formatErrorMessages, showErrorWithLineBreaks, validateNIDANumber } from '../../utils/utilts';
+import CustomAlert from '../../components/Modals/CustomAlert';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 const RegisterScreen = ({ route, navigation }: any) => {
 
@@ -121,6 +123,10 @@ const RegisterScreen = ({ route, navigation }: any) => {
   const [toastMessage, setToastMessage] = useState(''); 
   const [showToast, setShowToast] = useState(false);
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [onConfirmCallback, setOnConfirmCallback] = useState<() => void>(() => () => {});
+
   
   const toggleToast = () => {
     setShowToast(!showToast);
@@ -158,9 +164,8 @@ const RegisterScreen = ({ route, navigation }: any) => {
       dispatch(userRegiter(data))
         .unwrap()
         .then(result =>{
-          console.log('resultsss', result);
           if (result.status) {
-            ToastAndroid.show(`${t('auth:userCreatedSuccessfully')}`, ToastAndroid.LONG);
+            ToastNotification(`${t('screens:userCreatedSuccessfully')}`, 'success','long');
             navigation.navigate('Verify', { nextPage: 'Verify' });
           } else {
          
@@ -170,12 +175,21 @@ const RegisterScreen = ({ route, navigation }: any) => {
               setShowToast(true)
               showToastMessage(t('screens:errorOccured'));
             } else {
-              if(result.message){
-                setDisappearMessage(result.message);
+              if(result?.message){
+                if (result?.existing_user) {
+                  setModalMessage(result?.message);
+                  setOnConfirmCallback(() => () => {
+                    navigation.navigate('NewAccountPassword',{userData:result?.existing_user});
+                  });
+                  setIsModalVisible(true);
+                } else {
+                  setDisappearMessage(result?.message);
+                }
+
               }
-              setDisappearMessage("Something is not right please contact administartor");
-              setShowToast(true)
-              showToastMessage(t('screens:errorOccured'));
+             
+              // setShowToast(true)
+              // showToastMessage(t('screens:errorOccured'));
             }
           }
         })
@@ -186,6 +200,16 @@ const RegisterScreen = ({ route, navigation }: any) => {
     // }
 
   }
+
+
+  const handleModalConfirm = () => {
+    if (onConfirmCallback) onConfirmCallback();
+    setIsModalVisible(false);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+  };
 
   const { isDarkMode } = useSelector(
     (state: RootStateOrAny) => state.theme,
@@ -496,6 +520,14 @@ const RegisterScreen = ({ route, navigation }: any) => {
 
         </View>
 
+        <CustomAlert
+          isVisible={isModalVisible}
+          onConfirm={handleModalConfirm}
+          onCancel={handleModalCancel}
+          title={t('screens:accountExists')}
+          message={modalMessage}
+        />
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -504,7 +536,7 @@ const RegisterScreen = ({ route, navigation }: any) => {
 
 const internalstyles = StyleSheet.create({
   TermsConditions: {
-    marginTop: '10%',
+    marginTop: '6%',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -514,7 +546,7 @@ const internalstyles = StyleSheet.create({
   linkText: {
     color: colors.secondary,
     textDecorationLine: 'underline',
-    fontWeight:'bold'
+    fontFamily: 'Prompt-SemiBold',
   },
 });
 

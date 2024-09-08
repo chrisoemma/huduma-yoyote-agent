@@ -59,5 +59,7 @@ export default {
     businessName:'Jina la Biashara',
     enterBusinessName:'Ingiza jina la Biashara',
     businessNameRequired:'Jina la Biashara linahitajika',
+    confirmAccount:'Thibitisha Akaunti',
+    accountVerification:'Hakiki Akaunti'
 
 }

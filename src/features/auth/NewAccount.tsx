@@ -4,20 +4,16 @@ import {
   ScrollView,
   Text,
   View,
-  TextInput,
   TouchableOpacity,
-  Image,
   ToastAndroid,
-  ActivityIndicator,
   Dimensions,
   StyleSheet,
 } from 'react-native';
 
-import Icon from 'react-native-vector-icons/Feather';
 
 import { useForm, Controller } from 'react-hook-form';
 import { RootStateOrAny, useSelector } from 'react-redux';
-import { multiRegister, setFirstTime, userLogout, userRegiter } from './userSlice';
+import { multiRegister, setFirstTime, userLogout } from './userSlice';
 import { globalStyles } from '../../styles/global';
 
 import PhoneInput from 'react-native-phone-number-input';
@@ -33,6 +29,7 @@ import { colors } from '../../utils/colors';
 
 import { getProfessions } from '../professionsSlice';
 import ToastMessage from '../../components/ToastMessage';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 const NewAccount = ({ route, navigation }: any) => {
 
@@ -170,8 +167,8 @@ const NewAccount = ({ route, navigation }: any) => {
         .then(result => {
          
           if (result.status) {
-            console.log('excuted this true block')
-            ToastAndroid.show(`${t('screens:userMultiAccountCreated')}`, ToastAndroid.LONG);
+            ToastNotification(`${t('screens:userMultiAccountCreated')}`, 'success','long');
+
           } else {
             if (result.error) {
          
@@ -207,8 +204,7 @@ const NewAccount = ({ route, navigation }: any) => {
         .then(result => {
           console.log('resultsss', result);
           if (result.status) {
-            console.log('excuted this true block')
-            ToastAndroid.show(`${t('screens:userMultiAccountCreated')}`, ToastAndroid.LONG);
+            ToastNotification(`${t('screens:userMultiAccountCreated')}`, 'success','long');
           } else {
             if (result.error) {
          
@@ -309,12 +305,6 @@ const NewAccount = ({ route, navigation }: any) => {
               )}
               name="phone"
             />
-
-    {user?.phone_verified_at && (
-           <Text style={{color:colors.successGreen}}>
-           {t('screens:phoneVerified')}
-           </Text>
-      )}
 
             {errors.phone && (
               <Text style={stylesGlobal.errorMessage}>

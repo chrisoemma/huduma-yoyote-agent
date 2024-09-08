@@ -17,7 +17,8 @@ const CommissionDetails = ({ route }: any) => {
     const stylesGlobal = globalStyles();
 
     const getStatusTranslation = (status: string) => {
-        return t(`screens:${status}`);
+        const formattedStatus = status.replace(/-/g, '');
+        return t(`screens:${formattedStatus}`);
     };
 
 
@@ -29,47 +30,46 @@ const CommissionDetails = ({ route }: any) => {
             <SafeAreaView>
                 <View style={[styles.container, { backgroundColor: isDarkMode ? colors.darkModeBackground : colors.white }]}>
                     <View style={styles.firstBlock}>
-                        <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{commission?.provider ? t('screens:provider') : t('screens:client')}: {commission.user_type=='Provider' ?commission?.provider?.name  : commission?.client?.name}</Text>
-                        <Text style={{ color: isDarkMode ? colors.white : colors.black, fontSize: 17, fontWeight: 'bold' }}>{t('screens:amount')}: {formatAmountWithCommas(commission?.amount)}</Text>
+                        <Text style={{ color: isDarkMode ? colors.white : colors.black,   fontFamily: 'Prompt-Bold', }}>{commission?.provider ? t('screens:provider') : t('screens:client')}: {commission.user_type=='Provider' ?commission?.provider?.name  : commission?.client?.name}</Text>
+                        <Text style={{ color: isDarkMode ? colors.white : colors.black, fontSize: 15,    fontFamily: 'Prompt-SemiBold',}}>{t('screens:amount')}: {formatAmountWithCommas(commission?.amount)}</Text>
                     </View>
 
                     <View style={styles.secondBlock}>
                         <View>
                             
-                            <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{t('screens:date')}: {formatDate(commission?.created_at)}</Text>
-                            <Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{t('screens:payment_for')}: {getStatusTranslation(commission?.payment_for)}</Text>
+                            <Text style={{ color: isDarkMode ? colors.white : colors.black,   fontFamily: 'Prompt-Regular', }}>{t('screens:date')}: {formatDate(commission?.created_at)}</Text>
+                            <Text style={{ marginVertical: 10, color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>{t('screens:payment_for')}: {getStatusTranslation(commission?.payment_for)}</Text>
                             
                         </View>
                         <TouchableOpacity
                             style={[styles.status, { backgroundColor: getStatusBackgroundColor(commission?.status) }]}
-                        ><Text style={{ color: colors.white }}>{getStatusTranslation(commission.status)}</Text>
+                        ><Text style={{ color: colors.white,   fontFamily: 'Prompt-Regular', }}>{getStatusTranslation(commission.status)}</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={[styles.divider, { borderColor: isDarkMode ? colors.white : colors.grey }]} />
-                    <Text style={{ alignSelf: 'center', fontSize: 17, margin: 5, color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:commissionPayments')}</Text>
+                    <Text style={{ alignSelf: 'center', fontSize: 15, margin: 5, color: isDarkMode ? colors.white : colors.black,    fontFamily: 'Prompt-SemiBold', }}>{t('screens:commissionPayments')}</Text>
 
                     {commission?.payments?.map((payment, index) => (
                         <View>
                             <View style={[styles.circle, { backgroundColor: getRandomColorWithOpacity() }]}><Text
                                 style={{ color: colors.white }}>{index + 1}</Text></View>
                             <View style={styles.firstPaymentDiv}>
-                                <Text style={{ color: isDarkMode ? colors.white : colors.black, fontSize: 17, fontWeight: 'bold' }}>{t('screens:amount')}: {formatAmountWithCommas(payment?.amount)}</Text>
+                                <Text style={{ color: isDarkMode ? colors.white : colors.black, fontSize: 15,    fontFamily: 'Prompt-regular', }}>{t('screens:amount')}: {formatAmountWithCommas(payment?.amount)}</Text>
                                 <View style={[styles.Verticalline,{  backgroundColor:isDarkMode?colors.white:colors.black }]} />
-                                <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{t('screens:date')}: {formatDate(payment?.payment_date)}</Text>
+                                <Text style={{ color: isDarkMode ? colors.white : colors.black,   fontFamily: 'Prompt-Regular', }}>{t('screens:date')}: {formatDate(payment?.payment_date)}</Text>
                             </View>
                             <View style={styles.firstPaymentDiv}>
                                 <TouchableOpacity
                                     style={[styles.status, { backgroundColor: getStatusBackgroundColor(payment?.status) }]}
-                                ><Text style={{ color: colors.white }}>{getStatusTranslation(payment.status)}</Text>
+                                ><Text style={{ color: colors.white,   fontFamily: 'Prompt-Regular', }}>{getStatusTranslation(payment.status)}</Text>
                                 </TouchableOpacity>
                             </View>
                             <View  style={[styles.dottedLine]}/>
                         </View>
 
                     ))}
-                      
-                        <Text style={{color: isDarkMode ? colors.white : colors.black, fontSize: 17, fontWeight: 'bold',marginVertical:10}}>{t('screens:totalPaidAmount')}: { commission?.payments ?formatAmountWithCommas(sum):'0.00'}</Text>
-                        <Text style={{color: isDarkMode ? colors.white : colors.black, fontSize: 17, fontWeight: 'bold'}}>{t('screens:remainingAmount')}: {commission?.payments ?formatAmountWithCommas(commission?.amount-sum):''}</Text>
+                        <Text style={{color: isDarkMode ? colors.white : colors.black, fontSize: 15,    fontFamily: 'Prompt-Regular',marginVertical:10}}>{t('screens:totalPaidAmount')}: { commission?.payments ?formatAmountWithCommas(sum):'0.00'}</Text>
+                        <Text style={{color: isDarkMode ? colors.white : colors.black, fontSize: 15,    fontFamily: 'Prompt-Regular',}}>{t('screens:remainingAmount')}: {commission?.payments ?formatAmountWithCommas(commission?.amount-sum):''}</Text>
                    
                 </View>
             </SafeAreaView>

@@ -12,6 +12,8 @@ import RNFS from 'react-native-fs';
 import { updateProfile, userLogout } from '../auth/userSlice';
 import DocumentPicker, { types } from 'react-native-document-picker'
 import Notification from '../../components/Notification';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
+import { mediaPermissions } from '../../permissions/MediaPermissions';
 
 const Account = ({ navigation }: any) => {
 
@@ -109,14 +111,9 @@ const Account = ({ navigation }: any) => {
     const storageRef = firebase.storage().ref(`profile/${fileName}`);
 
     try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
+ 
 
-      if (granted[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED) {
         setUploadingPic(true);
-
         const snapshot = await storageRef.putFile(await getPathForFirebaseStorage(doc_uri));
 
         if (snapshot.state === firebase.storage.TaskState.SUCCESS) {
@@ -128,16 +125,14 @@ const Account = ({ navigation }: any) => {
 
           if (result.status) {
             setUploadingPic(false)
-            console.log('executed this true block');
-            ToastAndroid.show("Picture successfully!", ToastAndroid.SHORT);
+            ToastNotification(`${t('screens:pictureUpdatedSuccessfully')}`, 'success','long');
           } else {
-            setDisappearMessage('Unable to process request. Please try again later.');
-            console.log('don\'t navigate');
+            ToastNotification(`${t('screens:requestFail')}`, 'danger','long');
           }
 
           console.log(result);
         }
-      }
+   
     } catch (error) {
       console.warn(error);
       return false;
@@ -147,6 +142,11 @@ const Account = ({ navigation }: any) => {
   };
 
   const selectProfile = async () => {
+    const permissionsGranted = await mediaPermissions();
+    if (!permissionsGranted) {
+      ToastNotification(`${t('screens:mediaPermissionNotGranted')}`, 'default', 'long');
+      return;
+    }
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.images, DocumentPicker.types.images],
@@ -195,12 +195,13 @@ const Account = ({ navigation }: any) => {
             <TouchableOpacity
               onPress={handleSaveProfilePicture}
               style={styles.picture_save}
-              disabled={loading || uploadingPic} // Disable the button when loading or uploadingPic is true
+              disabled={loading || uploadingPic} 
             >
               {loading || uploadingPic ? (
                 // Render loader when loading or uploadingPic is true
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={{ marginHorizontal: 3, color: isDarkMode ? colors.black : colors.white }}>
+                  <Text style={{ marginHorizontal: 3, color: isDarkMode ? colors.black : colors.white,
+                     fontFamily: 'Prompt-Regular' }}>
                     {t('screens:uploding')}
                   </Text>
                   <ActivityIndicator size="small" color={colors.white} />
@@ -210,6 +211,7 @@ const Account = ({ navigation }: any) => {
                 <Text style={{
                   paddingVertical: 3,
                   paddingHorizontal: 6,
+                  fontFamily: 'Prompt-Regular',
                   color: colors.white
                 }}>
                   {t('screens:updatePicture')}
@@ -225,7 +227,7 @@ const Account = ({ navigation }: any) => {
                   client: user?.client
                 });
               } else {
-                ToastAndroid.show(`${t('screens:notAllowedAction')}`, ToastAndroid.SHORT);
+                ToastNotification(`${t('screens:notAllowedAction')}`, 'warning','long');
               }
             }}
           >
@@ -257,10 +259,12 @@ const Account = ({ navigation }: any) => {
             />
           </TouchableOpacity>
         </View>
-        <Text style={{ color: isDarkMode ? colors.white : colors.secondary, fontWeight: 'bold', alignSelf: 'center' }}>{user.name}</Text>
+        <Text style={{ color: isDarkMode ? colors.white : colors.secondary, fontFamily: 'Prompt-Bold', alignSelf: 'center' }}>{user.name}</Text>
 
         <View style={{ marginLeft: 10 }}>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:profession')}</Text>
+            <Text style={{color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold',}}>{t('screens:accountNumber')}</Text>
+        <Text style={{color: isDarkMode ? colors.white : colors.black,marginBottom: 10, fontFamily: 'Prompt-Regular',}}>#{user?.reg_number}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('screens:profession')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={{}}
           >
@@ -269,10 +273,10 @@ const Account = ({ navigation }: any) => {
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{selectedLanguage == 'en' ? user?.agent?.designation?.name?.en : user?.agent?.designation?.name?.sw}</Text>
+            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary, fontFamily: 'Prompt-Regular', }}>{selectedLanguage == 'en' ? user?.agent?.designation?.name?.en : user?.agent?.designation?.name?.sw}</Text>
           </TouchableOpacity>
 
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:phone')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('auth:phone')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={() => makePhoneCall(phoneNumber)}
           >
@@ -281,16 +285,16 @@ const Account = ({ navigation }: any) => {
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{user.phone}</Text>
+            <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary, fontFamily: 'Prompt-Regular', }}>{user.phone}</Text>
           </TouchableOpacity>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:email')}:</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold', }}>{t('auth:email')}:</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
             <Icon
               name="mail"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            {user?.email == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey }}> {t('screens:noEmail')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{user?.email}</Text>)
+            {user?.email == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey, fontFamily: 'Prompt-Regular', }}> {t('screens:noEmail')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>{user?.email}</Text>)
             }
           </TouchableOpacity>
           {/* <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:location')}</Text>
@@ -310,7 +314,7 @@ const Account = ({ navigation }: any) => {
 
         {user?.agent ?(
           <>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:residentialLocation')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('screens:residentialLocation')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row',marginBottom:10}}>
             <Icon
               name="enviroment"
@@ -320,10 +324,10 @@ const Account = ({ navigation }: any) => {
   {
    (residence === null || Object.keys(residence || {}).length === 0) ? 
  
-    (<Text style={{color:colors.dangerRed}}>{t('screens:noresidenceData')}</Text>) : 
+    (<Text style={{color:colors.dangerRed, fontFamily: 'Prompt-Regular',}}>{t('screens:noresidenceData')}</Text>) : 
  
     (
-      <Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>
+      <Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>
         {breakTextIntoLines(
           `${residence?.region?.region_name}, ${residence?.district?.district_name}, ${residence?.ward?.ward_name}, ${residence?.area?.place_name}`,
           20
@@ -334,7 +338,7 @@ const Account = ({ navigation }: any) => {
           </TouchableOpacity>
           </>
         ):(<></>)}
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:nida')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('auth:nida')}</Text>
 
           <TouchableOpacity style={{ flexDirection: 'row' }}
           >
@@ -343,9 +347,9 @@ const Account = ({ navigation }: any) => {
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{user?.nida}</Text>
+            <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>{user?.nida}</Text>
           </TouchableOpacity>
-          <Text style={{color:lastNidaStatus=='A.Valid'?colors.successGreen:colors.dangerRed}}>{lastNidaStatus=='A.Valid'?t('screens:verified'):t('screens:unVefified')}</Text>
+          <Text style={{color:lastNidaStatus=='A.Valid'?colors.successGreen:colors.dangerRed, fontFamily: 'Prompt-Regular',}}>{lastNidaStatus=='A.Valid'?t('screens:verified'):t('screens:unVefified')}</Text>
         </View>
         {user.agent && user.agent?.status !=='Deactivated' ? (
           <TouchableOpacity
@@ -362,7 +366,7 @@ const Account = ({ navigation }: any) => {
             <Text style={{
               padding: 5,
               color: colors.black,
-              fontWeight: 'bold'
+              fontFamily: 'Prompt-Bold',
             }}>{t('screens:myDocuments')}</Text>
           </TouchableOpacity>
         ) : (<View />)}
@@ -377,7 +381,7 @@ const Account = ({ navigation }: any) => {
             color={isDarkMode ? colors.white : colors.secondary}
             size={25}
           />
-          <Text style={{ paddingLeft: 10, fontWeight: 'bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('screens:changePassword')}</Text>
+          <Text style={{ paddingLeft: 10,  fontFamily: 'Prompt-Bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('screens:changePassword')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 10 }}
@@ -390,7 +394,7 @@ const Account = ({ navigation }: any) => {
             color={colors.dangerRed}
             size={25}
           />
-          <Text style={{ paddingLeft: 10, fontWeight: 'bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('navigate:logout')}</Text>
+          <Text style={{ paddingLeft: 10,  fontFamily: 'Prompt-Bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('navigate:logout')}</Text>
         </TouchableOpacity>
 
       </View>

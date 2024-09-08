@@ -13,6 +13,7 @@ import { BasicView } from '../../components/BasicView';
 import { deleteProvider } from './RegisterSlice';
 import { useSelector } from 'react-redux';
 import Iconions from 'react-native-vector-icons/Ionicons';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 
 const ProviderDetails = ({ route, navigation }: any) => {
@@ -65,16 +66,12 @@ const ProviderDetails = ({ route, navigation }: any) => {
             .unwrap()
             .then(result => {
               if (result.status) {
-                ToastAndroid.show(`${t('screens:deletedSuccessfully')}`, ToastAndroid.SHORT);
+                ToastNotification(`${t('screens:deletedSuccessfully')}`, 'success','long');
                 navigation.navigate('MyRegisters');
               } else {
-                setDisappearMessage(
-                  `${t('screens:requestFail')}`,
-                );
+                ToastNotification(`${t('screens:requestFail')}`, 'danger','long');
                 console.log('dont navigate');
               }
-
-              console.log('resultsss', result)
             })
             .catch(rejectedValueOrSerializedError => {
               // handle error here
@@ -149,13 +146,14 @@ const ProviderDetails = ({ route, navigation }: any) => {
             }}
           />
         </View>
-        <Text style={{ color: colors.secondary, fontWeight: 'bold', alignSelf: 'center' }}>{provider.name}</Text>
+        <Text style={{ color: colors.secondary, fontSize:16, alignSelf: 'center',fontFamily: 'Prompt-Bold', }}>{provider.name}</Text>
         <View style={{ marginLeft: 10 }}>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('screens:profession')}</Text>
+        <Text style={{color: isDarkMode ? colors.white : colors.black,fontFamily: 'Prompt-Bold',}}>{t('screens:accountNumber')}</Text>
+        <Text style={{color: isDarkMode ? colors.white : colors.black,marginBottom: 10,fontFamily: 'Prompt-Regular',}}>#{provider?.user?.reg_number}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black,fontFamily: 'Prompt-Bold' }}>{t('screens:profession')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={() => { }}
           >
-
             <Icon
               name="idcard"
               color={isDarkMode ? colors.white : colors.black}
@@ -163,28 +161,28 @@ const ProviderDetails = ({ route, navigation }: any) => {
             />
             <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary }}>{selectedLanguage == 'en' ? provider?.designation?.name?.en : provider?.designation?.name?.sw}</Text>
           </TouchableOpacity>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:phone')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold' }}>{t('auth:phone')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={() => makePhoneCall(phoneNumber)}
           >
             <Icon
               name="phone"
               color={isDarkMode ? colors.white : colors.black}
-              size={25}
+              size={20}
             />
-            <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{provider.user.phone}</Text>
+            <Text style={{ color: isDarkMode ? colors.white : colors.black,fontFamily: 'Prompt-Regular' }}>{provider.user.phone}</Text>
           </TouchableOpacity>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:email')}:</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold' }}>{t('auth:email')}:</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
             <Icon
               name="mail"
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            {provider?.user?.email == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey }}> {t('screens:noEmail')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black }}>{provider?.user?.email}</Text>)
+            {provider?.user?.email == null ? (<Text style={{ color: isDarkMode ? colors.white : colors.alsoGrey,fontFamily: 'Prompt-Regular' }}> {t('screens:noEmail')}</Text>) : (<Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black,fontFamily: 'Prompt-Regular' }}>{provider?.user?.email}</Text>)
             }
           </TouchableOpacity>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontWeight: 'bold' }}>{t('auth:nida')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold' }}>{t('auth:nida')}</Text>
 
           <TouchableOpacity style={{ flexDirection: 'row' }}
           >
@@ -193,7 +191,7 @@ const ProviderDetails = ({ route, navigation }: any) => {
               color={isDarkMode ? colors.white : colors.black}
               size={25}
             />
-            <Text style={{ color: isDarkMode ? colors.white : colors.black }}>{provider?.nida}</Text>
+            <Text style={{ color: isDarkMode ? colors.white : colors.black,fontFamily: 'Prompt-Regular' }}>{provider?.nida}</Text>
           </TouchableOpacity>
         </View>
 
@@ -201,7 +199,7 @@ const ProviderDetails = ({ route, navigation }: any) => {
 
           <View
             style={[styles.status, { backgroundColor: getStatusBackgroundColor(provider?.status) }]}
-          ><Text style={{ color: colors.white }}>{getStatusTranslation(provider.status)}</Text>
+          ><Text style={{ color: colors.white,fontFamily: 'Prompt-Regular' }}>{getStatusTranslation(provider.status)}</Text>
 
           </View>
 
@@ -256,6 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     padding: 10,
     borderRadius: 10,
+    marginTop:5
   },
   descContainer: {
     marginBottom: 8

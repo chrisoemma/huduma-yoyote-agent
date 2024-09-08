@@ -33,6 +33,8 @@ const OnBoarding = ({navigation}:any) => {
    const handleGetStarted = ()=>{
       dispatch(setOnboardingCompleted(true))
    }
+
+   
   
 
     return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, SafeAreaView, RefreshControl } from 'react-native';
 import { colors } from '../../utils/colors';
 import { globalStyles } from '../../styles/global';
 import ProviderList from '../../components/ProviderList';
@@ -21,6 +21,7 @@ const MyRegisters = ({ navigation }: any) => {
   const { user } = useSelector(
     (state: RootStateOrAny) => state.user,
   );
+  const [refreshing, setRefreshing] = useState(false);
 
   const { loading, clients, providers } = useSelector(
     (state: RootStateOrAny) => state.registers,
@@ -34,6 +35,19 @@ const MyRegisters = ({ navigation }: any) => {
     dispatch(getClients({agentId:user?.agent?.id}));
     dispatch(getProviders({agentId:user?.agent?.id}));
   }, [dispatch])
+
+
+  const callGetDashboard = React.useCallback(() => {
+
+    setRefreshing(true);
+    dispatch(getClients({ agentId: user?.agent?.id }));
+    // dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
+    dispatch(getProviders({ agentId: user?.agent?.id }))
+        .unwrap()
+        .then(result => {
+            setRefreshing(false);
+        })
+}, []);
 
 
   const [activeTab, setActiveTab] = useState('clients');
@@ -60,7 +74,7 @@ const MyRegisters = ({ navigation }: any) => {
 
   return (
     <SafeAreaView
-      style={stylesGlobal.scrollBg}
+      style={[stylesGlobal.scrollBg,{flex:1}]}
     >
       <View style={styles.container}>
         <TouchableOpacity
@@ -81,6 +95,9 @@ const MyRegisters = ({ navigation }: any) => {
           renderItem={renderProviderItem}
           keyExtractor={(item) => item?.id}
           numColumns={2}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={callGetDashboard} />
+        }
         />
       </View>
        {user.agent && user.status=='Active'?(<FloatBtn
@@ -122,11 +139,13 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.primary,
     padding: 10,
+    fontFamily: 'Prompt-Regular',
     marginRight: 5
     // Default text color
   },
   listContainer: {
-alignItems:'center'
+alignItems:'center',
+flex:1
   },
   itemlistContainer: {
    // width:'50%',

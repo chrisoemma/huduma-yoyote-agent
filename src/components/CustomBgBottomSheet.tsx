@@ -22,7 +22,7 @@ const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({
     backgroundColor: interpolateColor(
       animatedIndex.value,
       [0, 1],
-      isDarkMode ? ["#949494", "#949494"]: ["#FFFFFF", "#FFFFFF"]
+      isDarkMode ? ["#333131", "#333131"]: ["#FFFFFF", "#FFFFFF"]
     ),
   }));
   const containerStyle = useMemo(

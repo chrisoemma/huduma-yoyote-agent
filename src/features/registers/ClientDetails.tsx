@@ -12,6 +12,7 @@ import { useAppDispatch } from '../../app/store';
 import { BasicView } from '../../components/BasicView';
 import { deleteClient } from './RegisterSlice';
 import { useSelector,RootStateOrAny } from 'react-redux';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 
 const ClientDetails = ({route,navigation}:any) => {
@@ -64,16 +65,11 @@ Alert.alert(`${t('screens:deleteClient')}`, `${t('screens:areYouWantToDelete')}`
        .unwrap()
       .then(result => {
         if (result.status) {
-          ToastAndroid.show(`${t('screens:deletedSuccessfully')}`, ToastAndroid.SHORT);
-          navigation.navigate('MyRegisters');
+          ToastNotification(`${t('screens:deletedSuccessfully')}`, 'success','long');
         } else {
-          setDisappearMessage(
-            `${t('screens:requestFail')}`,
-          );
+          ToastNotification(`${t('screens:requestFail')}`, 'danger','long');
           console.log('dont navigate');
         }
-
-        console.log('resultsss',result)
       })
       .catch(rejectedValueOrSerializedError => {
         // handle error here
@@ -143,10 +139,12 @@ const getStatusTranslation = (status: string) => {
                         }}
                     />
                 </View>
-                <Text style={{color:colors.secondary,fontWeight:'bold',alignSelf:'center'}}>{client.name}</Text>
+                <Text style={{color:colors.secondary,fontFamily: 'Prompt-Bold',alignSelf:'center',fontSize:17}}>{client.name}</Text>
                 <View style={{marginLeft:10}}>
-               <Text style={{color: isDarkMode ? colors.white : colors.black,fontWeight:'bold'}}>{t('auth:phone')}</Text>
-                <TouchableOpacity style={{flexDirection:'row'}}
+                <Text style={{color: isDarkMode ? colors.white : colors.black,fontFamily: 'Prompt-Bold',}}>{t('screens:accountNumber')}</Text>
+                <Text style={{color: isDarkMode ? colors.white : colors.black,marginBottom: 10,fontFamily: 'Prompt-Regular',}}>#{client?.user?.reg_number}</Text>
+               <Text style={{color: isDarkMode ? colors.white : colors.black,        fontFamily: 'Prompt-Bold',}}>{t('auth:phone')}</Text>
+                <TouchableOpacity style={{flexDirection:'row',marginBottom: 10}}
                  onPress={() => makePhoneCall(phoneNumber)}
                 >
                 <Icon    
@@ -154,14 +152,14 @@ const getStatusTranslation = (status: string) => {
                   color={isDarkMode ? colors.white : colors.black}
                   size={25}
                   />
-                    <Text style={{paddingHorizontal:10,color: isDarkMode ? colors.white : colors.black}}>{client.user.phone}</Text>
+                    <Text style={{paddingHorizontal:10,color: isDarkMode ? colors.white : colors.black,fontFamily: 'Prompt-Regular',}}>{client.user.phone}</Text>
                 </TouchableOpacity>
          
                </View>
                <View style={{ flexDirection: 'row',marginTop:5 }}>
                     <View
                         style={[styles.status, { backgroundColor: getStatusBackgroundColor(client?.status) }]}
-                    ><Text style={{ color: colors.white }}>{getStatusTranslation(client.status)}</Text>
+                    ><Text style={{ color: colors.white,fontFamily: 'Prompt-Regular', }}>{getStatusTranslation(client.status)}</Text>
                     </View>
 
                 </View>
@@ -178,50 +176,71 @@ const getStatusTranslation = (status: string) => {
 }
 
 const styles = StyleSheet.create({
-  mainContentContainer: {
-      margin: 15,
-      backgroundColor: 'white',
-      height: '60%',
-      padding: 10,
-      borderRadius: 10,
+  btnView: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      marginTop: 10,
   },
-  btnView:{
-   flexDirection:'row',
-   justifyContent:'flex-end'
+  iconButton: {
+      marginRight: 10,
   },
-  bottomSheetContainer: {
-      // flex: 1,
-      margin: 10,
-      zIndex: 1000
-  },
-  bottomSheetContentContainer: {
-      padding: 10,
-      backgroundColor: 'white',
-      borderRadius: 10,
-  },
-  category: {
-      textTransform: 'uppercase',
-      color: colors.secondary,
+  profileContainer: {
       marginTop: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.white,
+      borderRadius: 90,
+      padding: 5,
+      elevation: 3,
   },
-  service: {
-      paddingTop: 5,
+  profileImage: {
+      width: 90,
+      height: 95,
+      borderRadius: 90,
+  },
+  clientName: {
+      color: colors.secondary,
       fontWeight: 'bold',
+      fontSize: 18,
+      textAlign: 'center',
+      marginVertical: 10,
+  },
+  contactContainer: {
+      marginHorizontal: 20,
+      marginVertical: 10,
+  },
+  label: {
+      fontWeight: 'bold',
+      color: colors.secondary,
+      marginBottom: 5,
+  },
+  phoneRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+  },
+  phoneNumber: {
+      paddingHorizontal: 10,
       color: colors.black,
   },
-  status: {
-      alignSelf: 'flex-end',
-      backgroundColor: colors.secondary,
-      padding: 10,
-      borderRadius: 10,
-  },
-  descContainer:{
-  marginBottom:8
-  },
-  btnContainer: {
+  statusContainer: {
       flexDirection: 'row',
-      justifyContent: 'flex-end'
-  }
+      justifyContent: 'center',
+      marginVertical: 10,
+  },
+  status: {
+      padding: 10,
+      borderRadius: 15,
+  },
+  statusText: {
+      color: colors.white,
+  },
+  divider: {
+      marginVertical: 20,
+  },
+  notificationContainer: {
+      alignItems: 'center',
+      marginBottom: 10,
+  },
 });
 
-export default ClientDetails
+export default ClientDetails;

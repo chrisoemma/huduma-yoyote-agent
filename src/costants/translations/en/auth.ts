@@ -59,6 +59,8 @@ export default{
     businessName:'Business Name',
     enterBusinessName:'Enter Business Name',
     businessNameRequired:'Business Name Required',
+    confirmAccount:'Confirm account',
+    accountVerification:'Account verification'
 
    
 }

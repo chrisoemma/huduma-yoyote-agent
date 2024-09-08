@@ -25,6 +25,7 @@ import { colors } from '../../utils/colors';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getProfessions } from '../professionsSlice';
 import ToastMessage from '../../components/ToastMessage';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 const RegisterProvider = ({ route, navigation }: any) => {
 
@@ -154,15 +155,14 @@ const RegisterProvider = ({ route, navigation }: any) => {
         .then(result => {
           // console.log('resultsss', result);
           if (result.status) {
-            console.log('excuted this true block')
-            ToastAndroid.show(`${t('screens:updatedSuccessfully')}`, ToastAndroid.SHORT);
+            ToastNotification(`${t('screens:updatedSuccessfully')}`, 'success', 'long');
             navigation.navigate('MyRegisters');
           } else {
             if (result.error) {
-              setDisappearMessage(result.error
-              );
+
+              ToastNotification(`${result.error}`, 'success', 'long');
             } else {
-              setDisappearMessage(result.message);
+              ToastNotification(`${result.message}`, 'success', 'long');
             }
             setShowToast(true)
             showToastMessage(t('screens:errorOccured'));
@@ -205,8 +205,8 @@ const RegisterProvider = ({ route, navigation }: any) => {
         .then(result => {
           // console.log('resultsss', result);
           if (result.status) {
-            console.log('excuted this true block')
-            ToastAndroid.show("User created successfuly!", ToastAndroid.SHORT);
+
+            ToastNotification(`${t('screens:createdSuccessfully')}`, 'success', 'long');
             navigation.navigate('MyRegisters');
           } else {
             if (result.error) {
@@ -435,7 +435,7 @@ const RegisterProvider = ({ route, navigation }: any) => {
                   }}
                   zIndex={6000}
                   placeholder={t(`screens:chooseProfessions`)}
-                  listMode="SCROLLVIEW"
+                  listMode="MODAL"
                   searchable={true}
                   open={open}
                   value={value}

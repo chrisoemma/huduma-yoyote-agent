@@ -26,6 +26,7 @@ import RNFS from 'react-native-fs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import UploadBusinessDocument from '../../components/UploadBusinessDocument';
 import { createDocument, deleteDocument, getAgentDocumentToRegister, getDocuments } from './AccountSlice';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 const Documents = () => {
 
@@ -54,7 +55,7 @@ const Documents = () => {
   };
 
   const handlePresentModalPress = useCallback(() => {
-   
+
     bottomSheetModalRef.current?.present();
   }, []);
   const handleSheetChanges = useCallback((index: number) => {
@@ -87,7 +88,7 @@ const Documents = () => {
     return t(`screens:${status}`);
   };
 
-  const { documents,documentToRegister} = useSelector(
+  const { documents, documentToRegister } = useSelector(
     (state: RootStateOrAny) => state.account,
   );
 
@@ -131,7 +132,7 @@ const Documents = () => {
     return result;
   }
 
-  const [toastMessage, setToastMessage] = useState(''); 
+  const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
   const toggleToast = () => {
@@ -142,8 +143,8 @@ const Documents = () => {
     setToastMessage(message);
     toggleToast();
     setTimeout(() => {
-      toggleToast(); 
-    }, 5000); 
+      toggleToast();
+    }, 5000);
   };
 
 
@@ -165,94 +166,74 @@ const Documents = () => {
     const existingDocument = documents.find(doc => doc.working_document_id === data.working_document_id);
 
     if (existingDocument) {
-        setShowToast(true)
-        showToastMessage(t('screens:documentAlreadyUploaded'))
-        return; // Stop the upload process
+      setShowToast(true)
+      showToastMessage(t('screens:documentAlreadyUploaded'))
+      return; // Stop the upload process
     }
 
 
-    if (doc !== null && value !==null) {
+    if (doc !== null && value !== null) {
 
       setShowToast(false)
       data.document_type = doc[0].type;
-     
+
       const fileExtension = doc[0].type.split("/").pop();
       var uuid = makeid(10)
       const fileName = `${uuid}.${fileExtension}`;
       var storageRef = firebase.storage().ref(`businesses/docs/${fileName}`);
 
-      console.log('file docs', doc[0].uri);
+      //  console.log('file docs', doc[0].uri);
       const fileUri = await getPathForFirebaseStorage(doc[0].uri);
       try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-
-          {
-            title: "Read Permission",
-            message: "Your app needs permission.",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK",
+        setUploadingDoc(true);
+        storageRef.putFile(fileUri).on(
+          firebase.storage.TaskEvent.STATE_CHANGED,
+          (snapshot: any) => {
+            console.log("snapshost: " + snapshot.state);
+            if (snapshot.state === firebase.storage.TaskState.SUCCESS) {
+            }
+          },
+          (error) => {
+            unsubscribe();
+          },
+          () => {
+            storageRef.getDownloadURL().then((downloadUrl: any) => {
+              data.doc_url = downloadUrl;
+              setUploadingDoc(false);
+              //    console.log('on submit data', data);
+              dispatch(createDocument({ data: data, agentId: user.agent.id }))
+                .unwrap()
+                .then(result => {
+                  console.log('resultsss', result);
+                  if (result.status) {
+                    ToastNotification(`${t('screens:uploadedDocSuccessfully')}`, 'success','long');
+                    toggleBusinessListModal();
+                    setResetModal(true)
+                    onSuccess();
+                  } else {
+                    setShowToast(true)
+                    showToastMessage(t('screens:unAbletoProcessRequest'))
+                    console.log('dont navigate');
+                  }
+                  console.log('result');
+                  console.log(result);
+                })
+                .catch(rejectedValueOrSerializedError => {
+                  // handle error here
+                  console.log('error');
+                  console.log(rejectedValueOrSerializedError);
+                });
+            });
           }
         );
 
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          setUploadingDoc(true);
-          storageRef.putFile(fileUri).on(
-            firebase.storage.TaskEvent.STATE_CHANGED,
-            (snapshot: any) => {
-              console.log("snapshost: " + snapshot.state);
-              if (snapshot.state === firebase.storage.TaskState.SUCCESS) {
-              }
-            },
-            (error) => {
-              unsubscribe();
-            },
-            () => {
-              storageRef.getDownloadURL().then((downloadUrl: any) => {
-                data.doc_url = downloadUrl;
-                setUploadingDoc(false);
-                //    console.log('on submit data', data);
-                dispatch(createDocument({ data: data, agentId: user.agent.id }))
-                  .unwrap()
-                  .then(result => {
-                    console.log('resultsss', result);
-                    if (result.status) {
-                      console.log('excuted this true block')
-                      ToastAndroid.show(`${t('screens:uploadedDocSuccessfully')}`, ToastAndroid.SHORT);
-
-                      toggleBusinessListModal();
-                      setResetModal(true)
-                      onSuccess();
-
-                    } else {
-                    
-                      setShowToast(true)
-                      showToastMessage(t('screens:unAbletoProcessRequest'))
-                      console.log('dont navigate');
-                    }
-                    console.log('result');
-                    console.log(result);
-                  })
-                  .catch(rejectedValueOrSerializedError => {
-                    // handle error here
-                    console.log('error');
-                    console.log(rejectedValueOrSerializedError);
-                  });
-              });
-            }
-          );
-        } else {
-          return false;
-        }
       } catch (error) {
         console.warn(error);
         return false;
       }
-    }else{
-        setShowToast(true)
-        showToastMessage(t('screens:documentUploadError'))
+    } else {
+      setShowToast(true)
+      showToastMessage(t('screens:documentUploadError'))
     }
   };
 
@@ -269,8 +250,8 @@ const Documents = () => {
     setSelectedBusiness(null);
   };
 
-  
-  const removeDocument = (id,status) =>{
+
+  const removeDocument = (id, status) => {
 
     if (status === 'Approved') {
       Alert.alert(t('screens:deleteNotAllowed'), t('screens:approvedDocumentCannotBeDeleted'), [
@@ -280,46 +261,39 @@ const Documents = () => {
     }
 
 
- 
+
     Alert.alert(`${t('screens:deleteDocument')}`, `${t('screens:areYouWantToDelete')}`, [
-    {
-      text: `${t('screens:cancel')}`,
-      onPress: () => console.log('Cancel task delete'),
-      style: 'cancel',
-    },
-    {
-      text: `${t('screens:ok')}`,
-      onPress: () => {
-     
-
-         console.log('document iddd',id);
-
-       
-        dispatch(deleteDocument({ documentId: id }))
-          .unwrap()
-          .then(result => {
-            if (result.status) {
-              ToastAndroid.show(`${t('screens:deletedSuccessfully')}`, ToastAndroid.SHORT);
-     
-            } else {
-              setDisappearMessage(
-                `${t('screens:requestFail')}`,
-              );
-           
-            }
-
-          
-          })
-          .catch(rejectedValueOrSerializedError => {
-            // handle error here
-            console.log('error');
-            console.log(rejectedValueOrSerializedError);
-          });
+      {
+        text: `${t('screens:cancel')}`,
+        onPress: () => console.log('Cancel task delete'),
+        style: 'cancel',
       },
-    },
-  ]);
+      {
+        text: `${t('screens:ok')}`,
+        onPress: () => {
+          // console.log('document iddd',id);
+          dispatch(deleteDocument({ documentId: id }))
+            .unwrap()
+            .then(result => {
+              if (result.status) {
+                ToastNotification(`${t('screens:deletedSuccessfully')}`, 'success','long');
 
-}
+              } else {
+                ToastNotification(`${t('screens:requestFail')}`, 'danger','long');
+              }
+
+
+            })
+            .catch(rejectedValueOrSerializedError => {
+              // handle error here
+              console.log('error');
+              console.log(rejectedValueOrSerializedError);
+            });
+        },
+      },
+    ]);
+
+  }
 
 
 
@@ -328,108 +302,108 @@ const Documents = () => {
       (docToRegister) => !documents.some((doc) => doc.working_document_id === docToRegister.id)
     );
   }, [documents, documentToRegister]);
-  
+
   const remainingDocumentsCount = filteredDocuments.length;
   const remainingDocumentsNames = filteredDocuments.map(doc => doc.doc_name).join(', ');
 
 
 
   return (
-    
+
     <>
-    <GestureHandlerRootView>
-      <SafeAreaView
-        style={stylesGlobal.scrollBg}
-      >
-        <ScrollView style={stylesGlobal.appView}>
+      <GestureHandlerRootView>
+        <SafeAreaView
+          style={stylesGlobal.scrollBg}
+        >
+          <ScrollView style={stylesGlobal.appView}>
 
-          
 
-{remainingDocumentsCount > 0 && (
-      <View style={{ alignItems: 'center', marginBottom: 20, padding: 10, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, backgroundColor: '#f9f9f9' }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#d9534f' }}>{remainingDocumentsCount} {t('screens:documentsNeedsTobeUploaded')}</Text>
-        <Text style={{ fontSize: 16, color: '#5bc0de' }}>Docs: <Text style={{ fontWeight: 'bold' }}>{remainingDocumentsNames}</Text></Text>
-      </View>
-    )}
 
-        <TouchableOpacity
-            style={styles.uploadArea}
-            onPress={handlePresentModalPress}
-          >
-            {uploadedDocument ? (
-              <Text style={styles.uploadedFileName}>
-                {uploadedDocument?.name}
-              </Text>
-            ) : (
-              <>
-                <Icon
-                  name="cloud-upload-outline"
-                  size={48}
-                  color="#3238a8"
-                />
-                <Text style={styles.uploadText}>{t('screens:uploadDocument')}</Text>
-              </>
+            {remainingDocumentsCount > 0 && (
+              <View style={{ alignItems: 'center', marginBottom: 20, padding: 10, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, backgroundColor: '#f9f9f9' }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#d9534f' }}>{remainingDocumentsCount} {t('screens:documentsNeedsTobeUploaded')}</Text>
+                <Text style={{ fontSize: 16, color: '#5bc0de' }}>Docs: <Text style={{ fontWeight: 'bold' }}>{remainingDocumentsNames}</Text></Text>
+              </View>
             )}
-            <View style={styles.dottedLine}></View>
-          </TouchableOpacity>
-          <View style={styles.listView}>
-  <Text style={{
-    color: isDarkMode ? colors.white : colors.black,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    paddingBottom: 10
-  }}>{t('screens:uploadedDocuments')}</Text>
-  {
-    documents?.map(document => (
-      <View style={styles.documentItem}
-        key={document?.id}
-      >
-        <Icon
-          name="folder"
-          size={25}
-          color={colors.secondary}
-          style={styles.icon}
-        />
-        <View style={styles.textContainer}>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black }}>
-            {breakTextIntoLines(document?.doc_format, 30)}{' '} ({document?.working_document?.doc_name})
-          </Text>
-          <Text style={{ color: getStatusBackgroundColor(document?.status) }}>
-            {getStatusTranslation(document?.status)}
-          </Text>
-        </View>
-        <TouchableOpacity>
-          <Menu>
-            <MenuTrigger>
-              <Icon
-                name="ellipsis-horizontal-sharp"
-                size={25}
-                color={isDarkMode ? colors.white : colors.black}
-                style={styles.icon}
-              />
-            </MenuTrigger>
-            <MenuOptions>
-              <MenuOption onSelect={() => handleDocumentPreview(document?.doc_type, document?.doc_url)}>
-                <Text style={{ color: colors.black }}>{t('screens:preview')}</Text>
-              </MenuOption>
-              <MenuOption onSelect={() => removeDocument(document?.id, document?.status)}>
-                <Text style={{ color: 'red' }}>{t('screens:delete')}</Text>
-              </MenuOption>
-            </MenuOptions>
-          </Menu>
-        </TouchableOpacity>
-      </View>
-    ))
-  }
-</View>
-          <PreviewDocumentModel
-            isVisible={isModalVisible}
-            onClose={togglePreviewModal}
-            previewType={previewType}
-            previewSource={previewSource}
-          />
-        </ScrollView>
-      </SafeAreaView>
+
+            <TouchableOpacity
+              style={styles.uploadArea}
+              onPress={handlePresentModalPress}
+            >
+              {uploadedDocument ? (
+                <Text style={styles.uploadedFileName}>
+                  {uploadedDocument?.name}
+                </Text>
+              ) : (
+                <>
+                  <Icon
+                    name="cloud-upload-outline"
+                    size={48}
+                    color="#3238a8"
+                  />
+                  <Text style={styles.uploadText}>{t('screens:uploadDocument')}</Text>
+                </>
+              )}
+              <View style={styles.dottedLine}></View>
+            </TouchableOpacity>
+            <View style={styles.listView}>
+              <Text style={{
+                color: isDarkMode ? colors.white : colors.black,
+                fontFamily: 'Prompt-Bold',
+                textTransform: 'uppercase',
+                paddingBottom: 10
+              }}>{t('screens:uploadedDocuments')}</Text>
+              {
+                documents?.map(document => (
+                  <View style={styles.documentItem}
+                    key={document?.id}
+                  >
+                    <Icon
+                      name="folder"
+                      size={25}
+                      color={colors.secondary}
+                      style={styles.icon}
+                    />
+                    <View style={styles.textContainer}>
+                      <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>
+                        {breakTextIntoLines(document?.doc_format, 30)}{' '} ({document?.working_document?.doc_name})
+                      </Text>
+                      <Text style={{ color: getStatusBackgroundColor(document?.status), fontFamily: 'Prompt-Regular', }}>
+                        {getStatusTranslation(document?.status)}
+                      </Text>
+                    </View>
+                    <TouchableOpacity>
+                      <Menu>
+                        <MenuTrigger>
+                          <Icon
+                            name="ellipsis-horizontal-sharp"
+                            size={25}
+                            color={isDarkMode ? colors.white : colors.black}
+                            style={styles.icon}
+                          />
+                        </MenuTrigger>
+                        <MenuOptions>
+                          <MenuOption onSelect={() => handleDocumentPreview(document?.doc_type, document?.doc_url)}>
+                            <Text style={{ color: colors.black, fontFamily: 'Prompt-Regular', }}>{t('screens:preview')}</Text>
+                          </MenuOption>
+                          <MenuOption onSelect={() => removeDocument(document?.id, document?.status)}>
+                            <Text style={{ color: 'red', fontFamily: 'Prompt-Regular', }}>{t('screens:delete')}</Text>
+                          </MenuOption>
+                        </MenuOptions>
+                      </Menu>
+                    </TouchableOpacity>
+                  </View>
+                ))
+              }
+            </View>
+            <PreviewDocumentModel
+              isVisible={isModalVisible}
+              onClose={togglePreviewModal}
+              previewType={previewType}
+              previewSource={previewSource}
+            />
+          </ScrollView>
+        </SafeAreaView>
 
         <BottomSheetModalProvider>
           <View style={styles.bottomSheetContainer}>
@@ -440,22 +414,22 @@ const Documents = () => {
               onChange={handleSheetChanges}
             >
               <BottomSheetScrollView style={styles.bottomSheetContentContainer}>
-              <UploadBusinessDocument
-              businesses={[]}
-              uploadedDocuments={documents}
-              regDocs={documentToRegister}
-              handleDocumentUpload={handleDocumentUpload}
-              uploadingDoc={uploadingDoc}
-              resetModalState={[resetModal, setResetModal]}
-              onSuccess={toggleBusinessListModal}
-              errorMessage={message}
-              showToast={showToast}
-              showToastMessage={showToastMessage}
-              toastMessage={toastMessage}
-              toggleToast={toggleToast}
-              setShowToast={setShowToast}
-         />
-                  
+                <UploadBusinessDocument
+                  businesses={[]}
+                  uploadedDocuments={documents}
+                  regDocs={documentToRegister}
+                  handleDocumentUpload={handleDocumentUpload}
+                  uploadingDoc={uploadingDoc}
+                  resetModalState={[resetModal, setResetModal]}
+                  onSuccess={toggleBusinessListModal}
+                  errorMessage={message}
+                  showToast={showToast}
+                  showToastMessage={showToastMessage}
+                  toastMessage={toastMessage}
+                  toggleToast={toggleToast}
+                  setShowToast={setShowToast}
+                />
+
               </BottomSheetScrollView>
             </BottomSheetModal>
           </View>
@@ -468,7 +442,32 @@ const Documents = () => {
 }
 
 const styles = StyleSheet.create({
-
+  noticeContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    backgroundColor: '#f9f9f9',
+     fontFamily: 'Prompt-Regular',
+  },
+  noticeTitle: {
+    fontSize: 18,
+     fontFamily: 'Prompt-Regular',
+    fontWeight: 'bold',
+    color: '#d9534f',
+    textAlign: 'center',
+  },
+  noticeText: {
+    fontSize: 16,
+     fontFamily: 'Prompt-Regular',
+    color: '#5bc0de',
+    textAlign: 'center',
+  },
+  noticeTextBold: {
+    fontWeight: 'bold',
+  },
   uploadArea: {
     alignSelf: 'center',
     width: '45%',
@@ -476,32 +475,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: '#888',
   },
   uploadedFileName: {
     fontSize: 16,
+     fontFamily: 'Prompt-Regular',
     color: colors.alsoGrey,
-    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 5,
   },
   uploadText: {
     fontSize: 16,
+     fontFamily: 'Prompt-Regular',
     color: colors.alsoGrey,
     textAlign: 'center',
   },
   bottomSheetContainer: {
-  // flex: 1,
-    zIndex: 1000
+    zIndex: 1000,
   },
   bottomSheetContentContainer: {
-    // flex:1,
-    padding: 10,
+    padding: 15,
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 12,
   },
   dottedLine: {
     borderStyle: 'dotted',
@@ -511,24 +509,39 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   listView: {
-    marginTop: 30
+    marginTop: 30,
   },
   documentItem: {
     flexDirection: 'row',
-    marginVertical: 10,
+    marginVertical: 12,
     borderBottomWidth: 0.5,
     borderBottomColor: '#888',
-    paddingVertical: 10,
+    paddingVertical: 12,
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   icon: {
-    marginHorizontal: 10
+    marginHorizontal: 12,
   },
   textContainer: {
     flex: 1,
-    marginHorizontal: 10
-  }
+    marginHorizontal: 12,
+  },
+  documentText: {
+     fontFamily: 'Prompt-Regular',
+    color: colors.black,
+  },
+  statusText: {
+     fontFamily: 'Prompt-Regular',
+  },
+  menuOptionText: {
+     fontFamily: 'Prompt-Regular',
+    color: colors.black,
+  },
+  menuOptionTextDelete: {
+     fontFamily: 'Prompt-Regular',
+    color: 'red',
+  },
 });
 
 export default Documents

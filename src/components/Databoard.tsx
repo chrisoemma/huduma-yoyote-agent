@@ -25,14 +25,15 @@ const Databoard = ({ onPress, mainTitle, number, color }: any) => {
             elevation: 5
         },
         headText: {
-            fontSize: 15,
+            fontSize: 14,
             color: '#ffff',
+            fontFamily: 'Prompt-Regular',
             textAlign: 'center'
 
         },
         middleText: {
             fontSize: 18,
-            fontWeight: 'bold',
+            fontFamily: 'Prompt-Regular',
             marginTop: 5,
             color: '#ffff',
         }

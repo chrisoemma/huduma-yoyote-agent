@@ -18,6 +18,8 @@ import { postUserDeviceToken } from "../features/auth/userSlice";
 import { useAppDispatch } from "../app/store";
 import { useSelector } from "react-redux";
 import { Platform } from "react-native";
+import NewAccount from "../features/auth/NewAccount";
+import Notifications from "../features/Notifications/Notifications";
 
 
 const AppStack = () => {
@@ -26,8 +28,12 @@ const AppStack = () => {
   const dispatch = useAppDispatch();
 
   const screenOptions = {
-      headerShown: false,
-    };
+    headerShown: true,
+    headerTitleStyle: {
+      fontFamily: 'Prompt-Regular', 
+      fontSize: 15, 
+    },
+  };
 
     const { user} = useSelector((state: RootStateOrAny) => state.user);
   const { t } = useTranslation();
@@ -80,7 +86,7 @@ const AppStack = () => {
   return (
     <>
     <FCMMessageHandler />
-    <Stack.Navigator initialRouteName="Home" >
+    <Stack.Navigator initialRouteName="Home"  screenOptions={screenOptions}>
       <Stack.Screen name="Home" component={DrawerNavigator}
         options={{ headerShown: false }}
       />
@@ -118,6 +124,10 @@ const AppStack = () => {
         options={{ title: t('navigate:commissions') }}
 
       />
+      <Stack.Screen name="Notifications"
+         component={Notifications}
+         options={{ title: t('screens:notifications') }}
+          />
 
       <Stack.Screen name="Commission Details" component={CommissionDetails}
         options={{ title: t('navigate:commissionDetails') }}

@@ -63,17 +63,16 @@ const LoginScreen = ({ route, navigation }: any) => {
 
 
   useEffect(() => {
+
     const retrieveDeviceToken = async () => {
       try {
-   
         const token = await messaging().getToken();
-        console.log('new token',token);
+       // console.log('new token',token);
         setDeviceToken(token);
       } catch (error) {
         console.log('Error retrieving device token:', error);
       }
     };
-
     retrieveDeviceToken();
   }, []);
 
@@ -200,7 +199,7 @@ const LoginScreen = ({ route, navigation }: any) => {
                   <Icon name={rightIcon} size={20} color={colors.grey} />
                 </TouchableOpacity>
               </View>
-              {errors.phone && (
+              {errors.password && (
                 <Text style={styles.errorMessage}>
                   {t('auth:passwordRequired')}
                 </Text>

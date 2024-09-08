@@ -23,6 +23,7 @@ import { updateUserInfo} from '../auth/userSlice';
 import { validateTanzanianPhoneNumber } from '../../utils/utilts';
 import ToastMessage from '../../components/ToastMessage';
 import Location from '../../components/Location';
+import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
 const EditAccount = ({ route, navigation }: any) => {
 
@@ -122,9 +123,8 @@ const EditAccount = ({ route, navigation }: any) => {
       .unwrap()
       .then(result => {
         console.log('resultsss', result);
-        if (result.status) {
-          console.log('excuted this true block')
-          ToastAndroid.show(`${t('screens:userUpatedSuccessfully')}`, ToastAndroid.LONG);
+        if (result.status) {         
+          ToastNotification(`${t('screens:userUpatedSuccessfully')}`, 'success','long');
           navigation.navigate('Account', {
             screen: 'Account',
             message: message
@@ -237,11 +237,11 @@ const EditAccount = ({ route, navigation }: any) => {
               )}
               name="phone"
             />
-            {user?.phone_verified_at && (
+            {/* {user?.phone_verified_at && (
               <Text style={{ color: colors.successGreen }}>
                 {t('screens:phoneVerified')}
               </Text>
-            )}
+            )} */}
 
             {errors.phone && (
               <Text style={stylesGlobal.errorMessage}>

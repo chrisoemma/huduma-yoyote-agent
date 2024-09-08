@@ -4,6 +4,8 @@ import { useSelector, RootStateOrAny } from 'react-redux';
 import { changeNidaStatus, logoutOtherDevice, setUserChanges, updateAgentChanges } from '../features/auth/userSlice';
 import { useAppDispatch } from '../app/store';
 import { changeDocStatus } from '../features/account/AccountSlice';
+import { addNotification } from '../features/Notifications/NotificationAgentSlice';
+
 
 const FCMMessageHandler = () => {
   const { user } = useSelector((state: RootStateOrAny) => state.user);
@@ -30,6 +32,17 @@ const FCMMessageHandler = () => {
 
     if (data && data.type) {
       const type = data.type;
+      if(data?.notification_type){
+        const notificationData = {
+          id: data.id,
+          type: data.notification_type,
+          title: data.title,
+          message: data.message,
+          viewed: false,
+        };
+        dispatch(addNotification(notificationData));
+      }
+
       switch (type) {
         case 'account_changed':
           const userChanges = data.userChanges ? JSON.parse(data.userChanges) : {};

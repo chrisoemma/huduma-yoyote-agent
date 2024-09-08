@@ -17,8 +17,8 @@ import { getClients, getProviders } from '../registers/RegisterSlice'
 import { getCommisionMonthly } from './ChartSlice'
 //import { LineChart } from 'react-native-chart-kit'
 import CustomBackground from '../../components/CustomBgBottomSheet'
-import Notification from '../../components/Notification'
 import { getStatusBackgroundColor } from '../../utils/utilts'
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 
 const Home = ({ navigation }: any) => {
@@ -41,15 +41,15 @@ const Home = ({ navigation }: any) => {
 
 
     const getStatusTranslation = (status: string) => {
-        if(status=='In Active'){
-         return t(`screens:InActive`);
-        }else if(status=='Pending approval'){
+        if (status == 'In Active') {
+            return t(`screens:InActive`);
+        } else if (status == 'Pending approval') {
             return t(`screens:PendingApproval`);
-        }else{
+        } else {
             return t(`screens:${status}`);
         }
-    
-      };
+
+    };
 
     const { user } = useSelector(
         (state: RootStateOrAny) => state.user,
@@ -190,7 +190,8 @@ const Home = ({ navigation }: any) => {
 
                             {sheetTitle === 'Service providers' || sheetTitle === 'Watoa Huduma' ? (
                                 providers?.map(item => (
-                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey,flexDirection:'row',justifyContent:'space-between' }]}
+                                    <TouchableOpacity
+                                        style={[styles.bottomView, { backgroundColor: isDarkMode ? colors.darkModeBottomSheet : colors.whiteBackground }]}
                                         onPress={() => {
                                             navigation.navigate('Provider Details', {
                                                 provider: item
@@ -198,34 +199,53 @@ const Home = ({ navigation }: any) => {
                                         }}
                                     >
                                         <View>
-                                            
-                                        <Text style={{ color: isDarkMode ? colors.black : colors.primary, fontWeight: 'bold', fontSize: 16 }}>{item?.name}</Text>
-                                        <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user?.phone}</Text>
+                                            {item?.user?.reg_number && (
+                                                <View style={styles.header}>
+                                                    <Text style={[styles.regNumber, { color: isDarkMode ? colors.white : colors.secondary }]}>
+                                                        {`#${item?.user?.reg_number}`}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                            <Text style={[styles.nameText, { color: isDarkMode ? colors.white : colors.secondary }]}>
+                                                <Icon name="person" size={20} color={isDarkMode ? colors.white : colors.darkGrey} />
+                                                {' '}{item?.name}
+                                            </Text>
+                                            <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user?.phone}</Text>
                                         </View>
                                         <View
-                            style={[styles.status, { backgroundColor: getStatusBackgroundColor(item?.status) }]}
-                        ><Text style={{ color: colors.white }}>{getStatusTranslation(item.status)}</Text>
-                        </View>
-
+                                            style={[styles.status, { backgroundColor: getStatusBackgroundColor(item?.status) }]}
+                                        ><Text style={{ color: colors.white,fontFamily: 'Prompt-Regular' }}>{getStatusTranslation(item.status)}</Text>
+                                        </View>
                                     </TouchableOpacity>
                                 ))
-
                             ) : (
                                 clients?.map(item => (
-                                    <TouchableOpacity style={[styles.bottomView, { borderBottomColor: isDarkMode ? colors.white : colors.alsoGrey,flexDirection:'row',justifyContent:'space-between' }]}
+                                    <TouchableOpacity
+                                        style={[styles.bottomView, { backgroundColor: isDarkMode ? colors.darkModeBottomSheet : colors.whiteBackground }]}
                                         onPress={() => navigation.navigate('Client Details', {
                                             client: item
                                         })}
                                     >
+
                                         <View>
-                                        <Text style={{ color: isDarkMode ? colors.black : colors.primary, fontWeight: 'bold', fontSize: 16 }}>{item?.name}</Text>
-                                        <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user.phone}</Text>
+                                            {item?.user?.reg_number && (
+                                                <View style={styles.header}>
+                                                    <Text style={[styles.regNumber, { color: isDarkMode ? colors.white : colors.secondary }]}>
+                                                        {`#${item?.user?.reg_number}`}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                            <Text style={[styles.nameText, { color: isDarkMode ? colors.white : colors.secondary }]}>
+                                                <Icon name="person" size={20} color={isDarkMode ? colors.white : colors.darkGrey} />
+                                                {' '}{item?.name}
+                                            </Text>
+                                            <Text style={{ paddingVertical: 10, color: isDarkMode ? colors.white : colors.black }}>{item?.user.phone}</Text>
                                         </View>
 
                                         <View
-                            style={[styles.status, { backgroundColor: getStatusBackgroundColor(item?.status) }]}
-                        ><Text style={{ color: colors.white }}>{getStatusTranslation(item.status)}</Text>
-                        </View>
+                                            style={[styles.status, { backgroundColor: getStatusBackgroundColor(item?.status) }]}
+                                        ><Text style={{ color: colors.white,fontFamily: 'Prompt-Regular' }}>{getStatusTranslation(item.status)}</Text>
+                                        </View>
                                     </TouchableOpacity>
                                 ))
                             )}
@@ -240,81 +260,63 @@ const Home = ({ navigation }: any) => {
 }
 
 const styles = StyleSheet.create({
-
     container: {
-        margin: 10
+        margin: 10,
     },
     status: {
         marginVertical: 10,
         padding: 8,
-        borderRadius: 10
+        borderRadius: 10,
+        elevation: 2, // Added elevation
+    },
+    statusText: {
+        color: colors.white,
+        fontFamily: 'Prompt-Regular',
     },
     contentContainer: {
-        marginHorizontal: 10
+        marginHorizontal: 10,
     },
-    chart: {
+    header: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 8,
-        borderRadius: 20,
-        backgroundColor: colors.white
+        marginBottom: 5,
+    },
+    regNumber: {
+        fontFamily: 'Prompt-Bold',
+        fontSize: 15,
+        marginLeft: 5,
     },
     title: {
         alignSelf: 'center',
-        fontSize: 15,
-        fontWeight: 'bold',
-
+        fontSize: 16,
+        fontFamily: 'Prompt-Bold',
+        marginVertical: 10,
     },
-    listView: {
-        marginHorizontal: 5,
-        marginVertical: 15
+    nameText: {
+        fontSize: 16,
+        fontFamily: 'Prompt-SemiBold',
     },
-    firstList: {
-        flexDirection: 'row',
-        justifyContent: 'space-between'
+    phoneText: {
+        paddingVertical: 10,
+        fontFamily: 'Prompt-Regular',
     },
-    productList: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 10,
-    },
-    secondList: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginVertical: 5
-    },
-    badge: {
-        backgroundColor: colors.successGreen,
-        padding: 3,
-        borderRadius: 5
-    },
-    badgeText: {
-        color: colors.white
-    },
-    textContainer: {
-        paddingVertical: 5,
-        margin: 5,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.alsoGrey
-    },
-    categoryService: {
-        textTransform: 'uppercase',
-        color: colors.secondary
-    },
-    service: {
-        paddingTop: 5
-    },
-    subservice: {
-        paddingTop: 5,
-        fontWeight: 'bold',
-        color: colors.black
-    },
-
     bottomView: {
-        paddingVertical: 5,
-        margin: 5,
-        borderBottomWidth: 0.5
-
+        paddingVertical: 10,
+        margin: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderRadius: 8,
+        elevation: 2,
+        paddingRight: 10
     },
-})
+    dataBoardContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 50,
+    },
+});
 
 export default Home
