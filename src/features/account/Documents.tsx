@@ -21,7 +21,6 @@ import { useAppDispatch } from '../../app/store';
 import { useSelector, RootStateOrAny } from 'react-redux';
 import { breakTextIntoLines, getStatusBackgroundColor } from '../../utils/utilts';
 import PreviewDocumentModel from '../../components/PriewDocumentModel';
-import { firebase } from '@react-native-firebase/storage';
 import RNFS from 'react-native-fs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import UploadBusinessDocument from '../../components/UploadBusinessDocument';
@@ -88,7 +87,7 @@ const Documents = () => {
     return t(`screens:${status}`);
   };
 
-  const { documents, documentToRegister } = useSelector(
+  const { documents, documentToRegister,createLoading } = useSelector(
     (state: RootStateOrAny) => state.account,
   );
 
@@ -158,74 +157,60 @@ const Documents = () => {
 
   const handleDocumentUpload = async (value, doc, text, valueType) => {
 
-    data.agent_id = user.agent.id,
-      data.doc_format = text;
+    const formData = new FormData();
+
+   // data.agent_id = user.agent.id;
+    formData.append('agent_id', user.agent.id);
+    //  data.doc_format = text;
     if (valueType == 1) {
-      data.working_document_id = value
+      formData.append('working_document_id', value);
+   //   data.working_document_id = value
     }
     const existingDocument = documents.find(doc => doc.working_document_id === data.working_document_id);
 
     if (existingDocument) {
       setShowToast(true)
       showToastMessage(t('screens:documentAlreadyUploaded'))
-      return; // Stop the upload process
+      return; 
     }
-
 
     if (doc !== null && value !== null) {
 
+      if (doc[0].size > 10 * 1024 * 1024) {
+        ToastNotification(`${t('screens:fileTooLarge')}`, 'danger', 'long');
+        return;
+      }
+
       setShowToast(false)
-      data.document_type = doc[0].type;
-
-      const fileExtension = doc[0].type.split("/").pop();
-      var uuid = makeid(10)
-      const fileName = `${uuid}.${fileExtension}`;
-      var storageRef = firebase.storage().ref(`businesses/docs/${fileName}`);
-
-      //  console.log('file docs', doc[0].uri);
-      const fileUri = await getPathForFirebaseStorage(doc[0].uri);
+      formData.append('doc_format', text);
+      formData.append('document_type', doc[0].type);
+      formData.append('file', doc[0]);
+  
       try {
-        setUploadingDoc(true);
-        storageRef.putFile(fileUri).on(
-          firebase.storage.TaskEvent.STATE_CHANGED,
-          (snapshot: any) => {
-            console.log("snapshost: " + snapshot.state);
-            if (snapshot.state === firebase.storage.TaskState.SUCCESS) {
-            }
-          },
-          (error) => {
-            unsubscribe();
-          },
-          () => {
-            storageRef.getDownloadURL().then((downloadUrl: any) => {
-              data.doc_url = downloadUrl;
-              setUploadingDoc(false);
-              //    console.log('on submit data', data);
-              dispatch(createDocument({ data: data, agentId: user.agent.id }))
-                .unwrap()
-                .then(result => {
-                  console.log('resultsss', result);
-                  if (result.status) {
-                    ToastNotification(`${t('screens:uploadedDocSuccessfully')}`, 'success','long');
-                    toggleBusinessListModal();
-                    setResetModal(true)
-                    onSuccess();
-                  } else {
-                    setShowToast(true)
-                    showToastMessage(t('screens:unAbletoProcessRequest'))
-                    console.log('dont navigate');
-                  }
-                  console.log('result');
-                  console.log(result);
-                })
-                .catch(rejectedValueOrSerializedError => {
-                  // handle error here
-                  console.log('error');
-                  console.log(rejectedValueOrSerializedError);
-                });
-            });
+     
+
+        dispatch(createDocument({ data: formData, agentId: user.agent.id }))
+        .unwrap()
+        .then(result => {
+          console.log('resultsss', result);
+          if (result.status) {
+            ToastNotification(`${t('screens:uploadedDocSuccessfully')}`, 'success','long');
+            toggleBusinessListModal();
+            setResetModal(true)
+            onSuccess();
+          } else {
+            setShowToast(true)
+            showToastMessage(t('screens:unAbletoProcessRequest'))
+            console.log('dont navigate');
           }
-        );
+          console.log('result');
+          console.log(result);
+        })
+        .catch(rejectedValueOrSerializedError => {
+          // handle error here
+          console.log('error');
+          console.log(rejectedValueOrSerializedError);
+        });
 
       } catch (error) {
         console.warn(error);
@@ -419,7 +404,7 @@ const Documents = () => {
                   uploadedDocuments={documents}
                   regDocs={documentToRegister}
                   handleDocumentUpload={handleDocumentUpload}
-                  uploadingDoc={uploadingDoc}
+                  uploadingDoc={createLoading}
                   resetModalState={[resetModal, setResetModal]}
                   onSuccess={toggleBusinessListModal}
                   errorMessage={message}

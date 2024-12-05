@@ -241,14 +241,14 @@ const UploadBusinessDocument = ({businesses,setShowToast,
                         }}
                         disabled={uploadingDoc}
                     >
-                        {uploadingDoc ? (
-                            <>
+                           {uploadingDoc ? (
+                            <View style={{flexDirection:'row'}}>
                              <ActivityIndicator color={colors.white} />
-                            <Text style={{ color: colors.white, paddingHorizontal:20,paddingVertical:10,fontSize:16 }}>{t('screens:uploadingWait')}</Text>
-                            </>
+                            <Text style={{ color: colors.white, paddingHorizontal:5,paddingVertical:10,fontSize:16,fontFamily: 'Prompt-Regular', }}>{t('screens:uploadingWait')}</Text>
+                            </View>
                            
                         ) : (
-                            <Text style={{ color: colors.white, paddingHorizontal:20,paddingVertical:10,fontSize:16 }}>{t('screens:upload')}</Text>
+                            <Text style={{ color: colors.white, paddingHorizontal:20,paddingVertical:10,fontSize:16,fontFamily: 'Prompt-Regular', }}>{t('screens:upload')}</Text>
                         )}
                     </TouchableOpacity>
                 </View>

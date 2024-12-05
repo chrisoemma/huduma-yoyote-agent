@@ -157,9 +157,9 @@ const CustomDrawerContent = (props: any) => {
           );
         })}
 
-        <DrawerRow
-          onPress={() => {
 
+        {/* <DrawerRow
+          onPress={() => {
             NavigateNotifications();
           }}
           isDarkMode={isDarkMode}
@@ -178,7 +178,8 @@ const CustomDrawerContent = (props: any) => {
             }}>
             {t('screens:notifications')}
           </Text>
-        </DrawerRow>
+        </DrawerRow> */}
+        
 
         <DrawerRow
           onPress={() => {

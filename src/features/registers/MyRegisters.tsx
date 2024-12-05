@@ -27,13 +27,13 @@ const MyRegisters = ({ navigation }: any) => {
     (state: RootStateOrAny) => state.registers,
   );
 
-  const {isDarkMode} = useSelector(
+  const { isDarkMode } = useSelector(
     (state: RootStateOrAny) => state.theme,
   );
 
   useEffect(() => {
-    dispatch(getClients({agentId:user?.agent?.id}));
-    dispatch(getProviders({agentId:user?.agent?.id}));
+    dispatch(getClients({ agentId: user?.agent?.id }));
+    dispatch(getProviders({ agentId: user?.agent?.id }));
   }, [dispatch])
 
 
@@ -43,11 +43,11 @@ const MyRegisters = ({ navigation }: any) => {
     dispatch(getClients({ agentId: user?.agent?.id }));
     // dispatch(getCommisionMonthly({ agentId: user?.agent?.id }));
     dispatch(getProviders({ agentId: user?.agent?.id }))
-        .unwrap()
-        .then(result => {
-            setRefreshing(false);
-        })
-}, []);
+      .unwrap()
+      .then(result => {
+        setRefreshing(false);
+      })
+  }, []);
 
 
   const [activeTab, setActiveTab] = useState('clients');
@@ -60,7 +60,7 @@ const MyRegisters = ({ navigation }: any) => {
     setActiveTab(activeTab === 'clients' ? 'serviceproviders' : 'clients');
   };
 
-  const renderProviderItem = ({ item }:any) => (
+  const renderProviderItem = ({ item }: any) => (
     <View style={styles.itemlistContainer}>
       {
         activeTab === 'clients' ? (<ClientList navigation={navigation} client={item} />) : (
@@ -70,13 +70,13 @@ const MyRegisters = ({ navigation }: any) => {
     </View>
   );
 
-  const stylesGlobal=globalStyles();
+  const stylesGlobal = globalStyles();
 
   return (
     <SafeAreaView
-      style={[stylesGlobal.scrollBg,{flex:1}]}
+      style={[stylesGlobal.scrollBg]}
     >
-      <View style={styles.container}>
+      <View style={[styles.container,]}>
         <TouchableOpacity
           style={styles.toggleButton}
           onPress={toggleTab}
@@ -89,7 +89,7 @@ const MyRegisters = ({ navigation }: any) => {
           </Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.listContainer}>
+      {/* <View style={styles.listContainer}> */}
         <FlatList
           data={activeTab === 'clients' ? clients : providers}
           renderItem={renderProviderItem}
@@ -97,10 +97,10 @@ const MyRegisters = ({ navigation }: any) => {
           numColumns={2}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={callGetDashboard} />
-        }
+          }
         />
-      </View>
-       {user.agent && user.status=='Active'?(<FloatBtn
+      {/* </View> */}
+      {user.agent && user.status == 'Active' ? (<FloatBtn
         iconType='add'
         onPress={() => {
           if (activeTab === 'clients') {
@@ -109,8 +109,8 @@ const MyRegisters = ({ navigation }: any) => {
             navigation.navigate('Register Provider');
           }
         }}
-      />):(<View />)}
-    
+      />) : (<View />)}
+
     </SafeAreaView>
   );
 };
@@ -121,8 +121,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
-    
-
   },
   toggleButton: {
     borderRadius: 30,
@@ -141,18 +139,17 @@ const styles = StyleSheet.create({
     padding: 10,
     fontFamily: 'Prompt-Regular',
     marginRight: 5
-    // Default text color
   },
   listContainer: {
-alignItems:'center',
-flex:1
+    alignItems: 'center',
+    flex: 1
   },
   itemlistContainer: {
-   // width:'50%',
+    // width:'50%',
     flexDirection: 'row',
     padding: 10,
     flexWrap: 'wrap',
-    alignContent:'center',
+    alignContent: 'center',
   }
 });
 export default MyRegisters;

@@ -4,7 +4,7 @@ import Modal from 'react-native-modal';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../utils/colors';
 
-const CustomAlert = ({ isVisible, onConfirm, onCancel, title, message }) => {
+const CustomAlert = ({ isVisible, onConfirm, onCancel, title, message,footer }) => {
 
   const { t } = useTranslation();
 
@@ -14,15 +14,28 @@ const CustomAlert = ({ isVisible, onConfirm, onCancel, title, message }) => {
     isVisible={isVisible}>
       <View style={styles.modalContainer}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.message}>{message}</Text>
+        {typeof message === 'string' ? (
+          <Text style={styles.message}>{message}</Text>
+        ) : (
+          message
+        )}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={onCancel}>
-            <Text style={[styles.buttonText,{color:'red'}]}>Cancel</Text>
+            <Text style={[styles.buttonText,{color:'red'}]}>{t('screens:cancel')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={onConfirm}>
-            <Text style={[styles.buttonText,{color:colors.secondary}]}>Confirm</Text>
+            <Text style={[styles.buttonText,{color:colors.secondary}]}>{t('screens:confirm')}</Text>
           </TouchableOpacity>
+          <View>
+         
+          </View>
+          
         </View>
+        {typeof footer === 'string' ? (
+          <Text style={styles.message}>{footer}</Text>
+        ) : (
+          footer
+        )}
       </View>
     </Modal>
   );
@@ -36,11 +49,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 18,
-    fontFamily: 'Prompt-Bold',
+    color:colors.black,
+    fontSize: 16,
+    fontFamily: 'Prompt-Regular',
     marginBottom: 10,
   },
   message: {
+    color:colors.black,
     fontSize: 16,
     fontFamily: 'Prompt-Regular',
     marginBottom: 20,

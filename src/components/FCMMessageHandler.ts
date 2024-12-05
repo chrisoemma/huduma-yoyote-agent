@@ -5,6 +5,7 @@ import { changeNidaStatus, logoutOtherDevice, setUserChanges, updateAgentChanges
 import { useAppDispatch } from '../app/store';
 import { changeDocStatus } from '../features/account/AccountSlice';
 import { addNotification } from '../features/Notifications/NotificationAgentSlice';
+import { formatRequestTime } from '../utils/utilts';
 
 
 const FCMMessageHandler = () => {
@@ -29,7 +30,7 @@ const FCMMessageHandler = () => {
   const handleRemoteMessage = remoteMessage => {
     
     const { data,notification } = remoteMessage;
-
+    const creationTime = formatRequestTime(new Date());
     if (data && data.type) {
       const type = data.type;
       if(data?.notification_type){
@@ -39,6 +40,7 @@ const FCMMessageHandler = () => {
           title: data.title,
           message: data.message,
           viewed: false,
+          createdAt: creationTime,
         };
         dispatch(addNotification(notificationData));
       }

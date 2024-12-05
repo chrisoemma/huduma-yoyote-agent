@@ -12,14 +12,15 @@ import ChangePassword from "../features/auth/ChangePassword";
 import CommissionDetails from "../features/commissions/CommissionDetails";
 import Documents from "../features/account/Documents";
 import FCMMessageHandler from "../components/FCMMessageHandler";
-import { useEffect } from "react";
-import messaging from '@react-native-firebase/messaging';
-import { postUserDeviceToken } from "../features/auth/userSlice";
+import { useEffect, useRef, useState } from "react";
+
 import { useAppDispatch } from "../app/store";
 import { useSelector } from "react-redux";
-import { Platform } from "react-native";
-import NewAccount from "../features/auth/NewAccount";
 import Notifications from "../features/Notifications/Notifications";
+import { handleDeviceToken } from "../utils/handeDeviceToken";
+import { AppState } from "react-native";
+import {getUserData } from "../features/auth/userSlice";
+
 
 
 const AppStack = () => {
@@ -37,50 +38,46 @@ const AppStack = () => {
 
     const { user} = useSelector((state: RootStateOrAny) => state.user);
   const { t } = useTranslation();
+  const appState = useRef(AppState.currentState);
+  const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
 
   
+ 
   useEffect(() => {
-    const retrieveDeviceToken = async () => {
-      try {
-        const token = await messaging().getToken();
-        console.log('Device Token:', token);
-        if (user) {
-          dispatch(postUserDeviceToken({ userId: user?.id, deviceToken: token }));
-        }
-      } catch (error) {
-        console.log('Error retrieving device token:', error);
-      }
-    };
-
-    const handleTokenRefresh = async (token) => {
-      console.log('New token:', token);
-      if (user) {
-        dispatch(postUserDeviceToken({ userId: user?.id, deviceToken: token }));
-      }
-    };
-    if (Platform.OS === 'ios') {
-      const requestPermission = async () => {
-        try {
-          await messaging().requestPermission();
-          retrieveDeviceToken();
-        } catch (error) {
-          console.log('Permission denied:', error);
-        }
-      };
-
-      requestPermission();
-    } else {
-      retrieveDeviceToken();
-    }
-
-    // Listen for token refresh
-    const unsubscribeOnTokenRefresh = messaging().onTokenRefresh(handleTokenRefresh);
-
+    const unsubscribe = handleDeviceToken(dispatch, user);
     return () => {
-      unsubscribeOnTokenRefresh();
+      if (unsubscribe) unsubscribe();
     };
   }, [dispatch, user]);
+
+
+
+  useEffect(() => {
+    let data={
+      isOnline:false
+    }
+    const handleAppStateChange = (nextAppState) => {
+    
+      appState.current = nextAppState;
+      setAppStateVisible(appState.current);
+      console.log('AppState', appState.current);
+      if (appState.current === 'active') {
+        if (user) {
+          dispatch(getUserData(user?.id,'agent'))
+          handleDeviceToken(dispatch, user);
+        
+        }
+      }
+   
+    };
+
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      appStateSubscription.remove();
+    };
+  }, [dispatch]);
   
 
   return (

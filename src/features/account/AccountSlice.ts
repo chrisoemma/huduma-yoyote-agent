@@ -74,11 +74,7 @@ export const createDocument = createAsyncThunk(
 
     const response = await fetch(`${API_URL}/agents/documents/${agentId}`, {
       method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+      body: data,
     });
     return (await response.json()) 
   },
@@ -98,6 +94,7 @@ const AccountSlice = createSlice({
     account: {},
     documentToRegister: [],
     documents: [],
+    createLoading:false,
     document:{},
     loading: false,
   },
@@ -182,14 +179,13 @@ const AccountSlice = createSlice({
 
       builder.addCase(createDocument.pending, state => {
         console.log('Pending');
-        state.loading = true;
+        state.createLoading = true;
         updateStatus(state, '');
       });
       builder.addCase(createDocument.fulfilled, (state, action) => {
            console.log('sucesss')
-           console.log('dayaa',action.payload)
-  
-        state.loading = false;
+        
+        state.createLoading = false;
         updateStatus(state, '');
   
         if (action.payload.status) {
@@ -204,7 +200,7 @@ const AccountSlice = createSlice({
       });
       builder.addCase(createDocument.rejected, (state, action) => {
         console.log('Rejected');
-        state.loading = false;
+        state.createLoading = false;
         updateStatus(state, '');
       });
 

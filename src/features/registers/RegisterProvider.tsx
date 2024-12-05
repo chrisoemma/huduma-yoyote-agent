@@ -27,6 +27,7 @@ import { getProfessions } from '../professionsSlice';
 import ToastMessage from '../../components/ToastMessage';
 import ToastNotification from '../../components/ToastNotification/ToastNotification';
 
+
 const RegisterProvider = ({ route, navigation }: any) => {
 
 
@@ -63,6 +64,7 @@ const RegisterProvider = ({ route, navigation }: any) => {
   const [designationError, setDesignationError] = useState('')
   const [nidaLoading, setNidaLoading] = useState(false)
   const [nidaError, setNidaError] = useState('');
+  const [charCount, setCharCount] = useState(0);
 
   const {
     control,
@@ -490,49 +492,68 @@ const RegisterProvider = ({ route, navigation }: any) => {
             </BasicView>
 
             <BasicView>
-              <Text
-                style={[
-                  stylesGlobal.inputFieldTitle,
-                  stylesGlobal.marginTop20,
-                ]}>
-                {t('auth:nida')}
-              </Text>
-              <Controller
-                control={control}
-                rules={{
-                  required: true,
-                  validate: (value) => {
-                    if (value.length !== 20) {
-                      setNidaError(t('auth:nida20numbers'));
-                      return false;
-                    }
-                    setNidaError('');
-                    return true;
-                  },
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInputField
-                    placeholderTextColor={colors.alsoGrey}
-                    placeholder={t('auth:enterNida')}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    keyboardType='numeric'
-                  />
-                )}
-                name="nida"
-              />
-              {errors.nida && (
-                <Text style={stylesGlobal.errorMessage}>
-                  {t('auth:nidaEmptyError')}
-                </Text>
-              )}
-              {nidaError && (
-                <Text style={stylesGlobal.errorMessage}>
-                  {nidaError}
-                </Text>
-              )}
-            </BasicView>
+      <Text
+        style={[
+          stylesGlobal.inputFieldTitle,
+          stylesGlobal.marginTop20,
+        ]}>
+        {t('auth:nida')}
+      </Text>
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+          validate: (value) => {
+            if (value.length !== 20) {
+              setNidaError(t('auth:nida20numbers'));
+              return false;
+            }
+            setNidaError('');
+            return true;
+          },
+        }}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInputField
+              placeholder={t('auth:enterNida')}
+              onBlur={onBlur}
+              onChangeText={(text) => {
+                if (text.length <= 20) {  
+                  onChange(text);
+                  setCharCount(text.length);  
+                }
+              }}
+              value={value}
+              maxLength={20}
+              keyboardType="numeric"
+              
+            />
+         
+         <Text
+              style={[
+                styles.charCount,
+                { color: charCount === 20 ? 'green' : 'red' },
+              ]}
+            >
+              {charCount}/20
+            </Text>
+          </>
+        )}
+        name="nida"
+      />
+
+      {errors.nida && (
+        <Text style={stylesGlobal.errorMessage}>
+          {t('auth:nidaEmptyError')}
+        </Text>
+      )}
+      {nidaError && (
+        <Text style={stylesGlobal.errorMessage}>
+          {nidaError}
+        </Text>
+      )}
+    </BasicView>
 
             <BasicView style={{ marginBottom: '40%' }}>
               <Button loading={nidaLoading || loading} onPress={handleSubmit(onSubmit)}>
@@ -555,6 +576,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flexGrow: 1,
+  },
+  charCount: {
+    fontSize: 13,       
+    marginTop: 5,       
+    textAlign: 'right', 
   },
   content: {
     paddingHorizontal: 20,

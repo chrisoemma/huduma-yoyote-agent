@@ -8,9 +8,9 @@ import { markAsViewed, removeNotification } from '../features/Notifications/Noti
 
 const NotificationItem = ({ notification, openContentModal }: any) => {
   const dispatch = useDispatch();
-  const { id, type, title, message, viewed } = notification;
+  const { id, type, title, message, viewed, createdAt } = notification;
 
-  const typeColor = type === 'Account' ? colors.secondary : colors.secondary;
+  const typeColor = type === 'Account' ? colors.primary : colors.secondary;
   const { isDarkMode } = useSelector(
     (state: RootStateOrAny) => state.theme,
   );
@@ -34,7 +34,7 @@ const NotificationItem = ({ notification, openContentModal }: any) => {
       <TouchableOpacity
         style={[
           styles.notificationItem,
-          viewed 
+          viewed
             ? (isDarkMode ? styles.viewedDark : styles.viewedLight)
             : (isDarkMode ? styles.notViewedDark : styles.notViewedLight),
         ]}
@@ -42,17 +42,26 @@ const NotificationItem = ({ notification, openContentModal }: any) => {
       >
         <View style={styles.notificationHeader}>
           <Text style={[styles.notificationType, { color: typeColor }]}>{type}</Text>
-          <View 
+          <View
             style={[
-              styles.notificationDot, 
-              viewed 
-                ? styles.viewedDot 
+              styles.notificationDot,
+              viewed
+                ? styles.viewedDot
                 : styles.notViewedDot,
             ]}
           />
         </View>
-        <Text style={[styles.notificationTitle, {color: isDarkMode ? colors.white : colors.black}]}>{title}</Text>
-        <Text style={[styles.notificationMessage, {color: isDarkMode ? colors.white : colors.black}]}>{message}</Text>
+        <Text style={[styles.notificationTitle, { color: isDarkMode ? colors.white : colors.black }]}>{title}</Text>
+        <Text
+          style={[styles.notificationMessage, { color: isDarkMode ? colors.white : colors.black }]}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {message}
+        </Text>
+        <Text style={[styles.notificationTime, { color: isDarkMode ? colors.white : colors.black }]}>
+          {createdAt}
+        </Text>
       </TouchableOpacity>
     </Swipeable>
   );
@@ -71,8 +80,8 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   viewedDark: {
-    // backgroundColor: colors.darkGrey,
-    borderWidth: 0.6,
+    //  backgroundColor: colors.darkGrey,
+    borderWidth: 0.6
   },
   notViewedDark: {
     // backgroundColor: colors.alsoLightGrey,
@@ -87,7 +96,6 @@ const styles = StyleSheet.create({
   },
   notificationType: {
     fontSize: 16,
-    fontFamily: 'Prompt-Regular', // Apply custom font
     fontWeight: 'bold',
   },
   notificationDot: {
@@ -102,12 +110,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.dangerRed,
   },
   notificationTitle: {
-    fontSize: 15,
-    fontFamily: 'Prompt-Bold', 
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
   notificationMessage: {
-    fontSize: 13,
-    fontFamily: 'Prompt-Regular',
+    fontSize: 14,
   },
   deleteButton: {
     backgroundColor: '#f44336',
@@ -117,6 +125,12 @@ const styles = StyleSheet.create({
     height: '100%',
     paddingHorizontal: 10,
   },
+  notificationTime: {
+    fontSize: 12,
+    color: colors.grey, // You can adjust this color
+    marginTop: 5, // Add some margin for better spacing
+  },
 });
 
 export default NotificationItem;
+

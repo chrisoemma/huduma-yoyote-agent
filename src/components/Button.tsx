@@ -10,7 +10,7 @@ const Button = ({
   onPress,
   children,
   height = 60,
-  backgroundColor = colors.primary,
+  backgroundColor = colors.secondary,
   elevation = 0,
 }: any) => {
   const TouchableOpacity = styled.TouchableOpacity`

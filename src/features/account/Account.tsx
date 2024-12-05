@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Image, StyleSheet, Alert, TouchableOpacity, ActivityIndicator, PermissionsAndroid, ToastAndroid } from 'react-native'
+import { View, Text, SafeAreaView, Image, StyleSheet, Alert, TouchableOpacity, ActivityIndicator, PermissionsAndroid, ToastAndroid, ScrollView, TextInput, Modal } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { globalStyles } from '../../styles/global'
 import { colors } from '../../utils/colors'
@@ -9,11 +9,12 @@ import { useTranslation } from 'react-i18next';
 import { useSelector, RootStateOrAny, useDispatch } from 'react-redux';
 import { firebase } from '@react-native-firebase/storage';
 import RNFS from 'react-native-fs';
-import { updateProfile, userLogout } from '../auth/userSlice';
+import { accountDeletion, updateProfile, userLogout } from '../auth/userSlice';
 import DocumentPicker, { types } from 'react-native-document-picker'
 import Notification from '../../components/Notification';
 import ToastNotification from '../../components/ToastNotification/ToastNotification';
 import { mediaPermissions } from '../../permissions/MediaPermissions';
+import CustomAlert from '../../components/Modals/CustomAlert';
 
 const Account = ({ navigation }: any) => {
 
@@ -22,7 +23,7 @@ const Account = ({ navigation }: any) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { loading, user,residence } = useSelector(
+  const { loading, user, residence } = useSelector(
     (state: RootStateOrAny) => state.user,
   );
 
@@ -66,11 +67,61 @@ const Account = ({ navigation }: any) => {
 
   const [locationName, setLocationName] = useState(null);
 
+
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+
+  // Handle delete button click
+  const handleDeleteClick = () => {
+    setIsConfirmModalVisible(true); // Show the confirmation modal
+  };
+
+  // Handle Proceed in confirmation modal
+  const handleProceed = () => {
+    setIsConfirmModalVisible(false); // Close confirmation modal
+    setIsPasswordModalVisible(true); // Show password modal
+  };
+
+  // Handle password verification
+  const handlePasswordSubmit = async () => {
+    if (!passwordInput) {
+      ToastNotification(`${t('screens:pleaseEnterPassword')}`, 'danger', 'long');
+      return; 
+    }
+  
+    const deletionData = {
+      user_id: user?.id,
+      password: passwordInput,
+    };
+  
+    try {
+      const result = await dispatch(accountDeletion(deletionData)).unwrap();
+  
+      if (result.status) {
+        // Notify success and log out the user
+        ToastNotification(`${result.message}`, 'success', 'long');
+        dispatch(userLogout());
+      } else {
+        // Notify failure if `result.status` is false
+        ToastNotification(`${result.message}`, 'danger', 'long');
+      }
+    } catch (error) {
+      // Handle any dispatch-related errors
+      ToastNotification(
+        `${t('screens:accountDeletionFailed') || error.message}`,
+        'danger',
+        'long'
+      );
+    }
+  };
+  
+
   useEffect(() => {
     getLocationName(user?.agent?.latitude, user?.agent?.longitude)
       .then((locationName) => {
         setLocationName(locationName);
-       // console.log('Location Name:', locationName);
+        // console.log('Location Name:', locationName);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -79,7 +130,7 @@ const Account = ({ navigation }: any) => {
 
 
   const confirmLogout = () =>
-    Alert.alert(`${t('screens:logout')}`, `${t('screens:areYouSureLogout')}`, [
+    Alert.alert(`${t('navigate:logout')}`, `${t('screens:areYouSureLogout')}`, [
       {
         text: `${t('screens:cancel')}`,
         onPress: () => console.log('Cancel Logout'),
@@ -111,28 +162,28 @@ const Account = ({ navigation }: any) => {
     const storageRef = firebase.storage().ref(`profile/${fileName}`);
 
     try {
- 
 
-        setUploadingPic(true);
-        const snapshot = await storageRef.putFile(await getPathForFirebaseStorage(doc_uri));
 
-        if (snapshot.state === firebase.storage.TaskState.SUCCESS) {
-          const downloadUrl = await storageRef.getDownloadURL();
-          data.doc_type = doc_type;
-          data.image_url = downloadUrl;
+      setUploadingPic(true);
+      const snapshot = await storageRef.putFile(await getPathForFirebaseStorage(doc_uri));
 
-          const result = await dispatch(updateProfile({ data: data, userId: user.id })).unwrap();
+      if (snapshot.state === firebase.storage.TaskState.SUCCESS) {
+        const downloadUrl = await storageRef.getDownloadURL();
+        data.doc_type = doc_type;
+        data.image_url = downloadUrl;
 
-          if (result.status) {
-            setUploadingPic(false)
-            ToastNotification(`${t('screens:pictureUpdatedSuccessfully')}`, 'success','long');
-          } else {
-            ToastNotification(`${t('screens:requestFail')}`, 'danger','long');
-          }
+        const result = await dispatch(updateProfile({ data: data, userId: user.id })).unwrap();
 
-          console.log(result);
+        if (result.status) {
+          setUploadingPic(false)
+          ToastNotification(`${t('screens:pictureUpdatedSuccessfully')}`, 'success', 'long');
+        } else {
+          ToastNotification(`${t('screens:requestFail')}`, 'danger', 'long');
         }
-   
+
+        console.log(result);
+      }
+
     } catch (error) {
       console.warn(error);
       return false;
@@ -171,9 +222,11 @@ const Account = ({ navigation }: any) => {
   const phoneNumber = `${user?.phone}`;
   return (
     <SafeAreaView
-      style={stylesGlobal.scrollBg}
+      style={[stylesGlobal.scrollBg]}
     >
-      <View style={stylesGlobal.appView}>
+      <ScrollView style={[stylesGlobal.appView]}
+        showsVerticalScrollIndicator={false}
+      >
 
         {user.agent && user?.agent?.status == 'Pending approval' ? (<Notification
           message={`${t('screens:accountPendingActivation')}`}
@@ -195,13 +248,15 @@ const Account = ({ navigation }: any) => {
             <TouchableOpacity
               onPress={handleSaveProfilePicture}
               style={styles.picture_save}
-              disabled={loading || uploadingPic} 
+              disabled={loading || uploadingPic}
             >
               {loading || uploadingPic ? (
                 // Render loader when loading or uploadingPic is true
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={{ marginHorizontal: 3, color: isDarkMode ? colors.black : colors.white,
-                     fontFamily: 'Prompt-Regular' }}>
+                  <Text style={{
+                    marginHorizontal: 3, color: isDarkMode ? colors.black : colors.white,
+                    fontFamily: 'Prompt-Regular'
+                  }}>
                     {t('screens:uploding')}
                   </Text>
                   <ActivityIndicator size="small" color={colors.white} />
@@ -227,7 +282,7 @@ const Account = ({ navigation }: any) => {
                   client: user?.client
                 });
               } else {
-                ToastNotification(`${t('screens:notAllowedAction')}`, 'warning','long');
+                ToastNotification(`${t('screens:notAllowedAction')}`, 'warning', 'long');
               }
             }}
           >
@@ -262,9 +317,9 @@ const Account = ({ navigation }: any) => {
         <Text style={{ color: isDarkMode ? colors.white : colors.secondary, fontFamily: 'Prompt-Bold', alignSelf: 'center' }}>{user.name}</Text>
 
         <View style={{ marginLeft: 10 }}>
-            <Text style={{color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold',}}>{t('screens:accountNumber')}</Text>
-        <Text style={{color: isDarkMode ? colors.white : colors.black,marginBottom: 10, fontFamily: 'Prompt-Regular',}}>#{user?.reg_number}</Text>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('screens:profession')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold', }}>{t('screens:accountNumber')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, marginBottom: 10, fontFamily: 'Prompt-Regular', }}>#{user?.reg_number}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold', }}>{t('screens:profession')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={{}}
           >
@@ -276,7 +331,7 @@ const Account = ({ navigation }: any) => {
             <Text style={{ paddingHorizontal: 10, color: isDarkMode ? colors.white : colors.secondary, fontFamily: 'Prompt-Regular', }}>{selectedLanguage == 'en' ? user?.agent?.designation?.name?.en : user?.agent?.designation?.name?.sw}</Text>
           </TouchableOpacity>
 
-          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('auth:phone')}</Text>
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold', }}>{t('auth:phone')}</Text>
           <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}
             onPress={() => makePhoneCall(phoneNumber)}
           >
@@ -312,33 +367,33 @@ const Account = ({ navigation }: any) => {
 
 
 
-        {user?.agent ?(
-          <>
-          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('screens:residentialLocation')}</Text>
-          <TouchableOpacity style={{ flexDirection: 'row',marginBottom:10}}>
-            <Icon
-              name="enviroment"
-              color={isDarkMode ? colors.white : colors.black}
-              size={25}
-            />
-  {
-   (residence === null || Object.keys(residence || {}).length === 0) ? 
- 
-    (<Text style={{color:colors.dangerRed, fontFamily: 'Prompt-Regular',}}>{t('screens:noresidenceData')}</Text>) : 
- 
-    (
-      <Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>
-        {breakTextIntoLines(
-          `${residence?.region?.region_name}, ${residence?.district?.district_name}, ${residence?.ward?.ward_name}, ${residence?.area?.place_name}`,
-          20
-        )}
-      </Text>
-    )
-}
-          </TouchableOpacity>
-          </>
-        ):(<></>)}
-          <Text style={{ color: isDarkMode ? colors.white : colors.black,  fontFamily: 'Prompt-Bold', }}>{t('auth:nida')}</Text>
+          {user?.agent ? (
+            <>
+              <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold', }}>{t('screens:residentialLocation')}</Text>
+              <TouchableOpacity style={{ flexDirection: 'row', marginBottom: 10 }}>
+                <Icon
+                  name="enviroment"
+                  color={isDarkMode ? colors.white : colors.black}
+                  size={25}
+                />
+                {
+                  (residence === null || Object.keys(residence || {}).length === 0) ?
+
+                    (<Text style={{ color: colors.dangerRed, fontFamily: 'Prompt-Regular', }}>{t('screens:noresidenceData')}</Text>) :
+
+                    (
+                      <Text style={{ paddingLeft: 10, color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>
+                        {breakTextIntoLines(
+                          `${residence?.region?.region_name}, ${residence?.district?.district_name}, ${residence?.ward?.ward_name}, ${residence?.area?.place_name}`,
+                          20
+                        )}
+                      </Text>
+                    )
+                }
+              </TouchableOpacity>
+            </>
+          ) : (<></>)}
+          <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Bold', }}>{t('auth:nida')}</Text>
 
           <TouchableOpacity style={{ flexDirection: 'row' }}
           >
@@ -349,9 +404,9 @@ const Account = ({ navigation }: any) => {
             />
             <Text style={{ color: isDarkMode ? colors.white : colors.black, fontFamily: 'Prompt-Regular', }}>{user?.nida}</Text>
           </TouchableOpacity>
-          <Text style={{color:lastNidaStatus=='A.Valid'?colors.successGreen:colors.dangerRed, fontFamily: 'Prompt-Regular',}}>{lastNidaStatus=='A.Valid'?t('screens:verified'):t('screens:unVefified')}</Text>
+          <Text style={{ color: lastNidaStatus == 'A.Valid' ? colors.successGreen : colors.dangerRed, fontFamily: 'Prompt-Regular', }}>{lastNidaStatus == 'A.Valid' ? t('screens:verified') : t('screens:unVefified')}</Text>
         </View>
-        {user.agent && user.agent?.status !=='Deactivated' ? (
+        {user.agent && user.agent?.status !== 'Deactivated' ? (
           <TouchableOpacity
             onPress={() => {
               navigation.navigate('My Documents', {
@@ -373,7 +428,7 @@ const Account = ({ navigation }: any) => {
         <View style={{ marginVertical: 20 }}>
           <Divider />
         </View>
-        <TouchableOpacity style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 5 }}
+        <TouchableOpacity style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 5, marginBottom: 20 }}
           onPress={() => { navigation.navigate("Change Password") }}
         >
           <Icon
@@ -381,10 +436,10 @@ const Account = ({ navigation }: any) => {
             color={isDarkMode ? colors.white : colors.secondary}
             size={25}
           />
-          <Text style={{ paddingLeft: 10,  fontFamily: 'Prompt-Bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('screens:changePassword')}</Text>
+          <Text style={{ paddingLeft: 10, fontFamily: 'Prompt-Bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('screens:changePassword')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 10 }}
+        <TouchableOpacity style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 10,marginBottom:20 }}
           onPress={() => {
             confirmLogout();
           }}
@@ -394,10 +449,82 @@ const Account = ({ navigation }: any) => {
             color={colors.dangerRed}
             size={25}
           />
-          <Text style={{ paddingLeft: 10,  fontFamily: 'Prompt-Bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('navigate:logout')}</Text>
+          <Text style={{ paddingLeft: 10, fontFamily: 'Prompt-Bold', color: isDarkMode ? colors.white : colors.secondary }}>{t('navigate:logout')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 10,marginBottom:20 }}
+          onPress={handleDeleteClick}
+        >
+          <Icon
+            name="delete"
+            color={colors.dangerRed}
+            size={25}
+          />
+          <Text style={{ paddingLeft: 10, fontFamily: 'Prompt-Bold', color: colors.dangerRed }}>
+            {t('screens:deleteAccount')}
+          </Text>
         </TouchableOpacity>
 
-      </View>
+        <Modal
+          visible={isConfirmModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsConfirmModalVisible(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
+              <Text style={styles.message}>{t('screens:deleteAccountWarning')}</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
+                <TouchableOpacity
+                  onPress={() => setIsConfirmModalVisible(false)}
+                  style={{ padding: 10, backgroundColor: 'grey', borderRadius: 5 }}
+                >
+                  <Text style={{ color: 'white' }}>{t('screens:cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleProceed}
+                  style={{ padding: 10, backgroundColor: 'red', borderRadius: 5 }}
+                >
+                  <Text style={{ color: 'white' }}>{t('screens:proceed')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Password Modal */}
+        <Modal
+          visible={isPasswordModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsPasswordModalVisible(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
+              <Text style={styles.message}>{t('screens:enterPasswordAccountConfirmation')}</Text>
+              <TextInput
+                secureTextEntry
+                placeholder={t('auth:password')}
+                style={{ borderWidth: 1, borderColor: 'grey', marginTop: 20, padding: 10, borderRadius: 5 }}
+                value={passwordInput}
+                onChangeText={setPasswordInput}
+              />
+              <TouchableOpacity
+                onPress={handlePasswordSubmit}
+                style={{ padding: 10, backgroundColor: 'red', borderRadius: 20, marginTop: 20, alignItems: 'center' }}
+              >
+                <Text style={{ color: 'white' }}>{t('screens:confirmDelete')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.button} onPress={() => setIsPasswordModalVisible(false)}>
+                <Text style={[styles.buttonText, { color: colors.secondary }]}>{t('screens:cancel')}</Text>
+              </TouchableOpacity>
+
+            </View>
+          </View>
+        </Modal>
+
+      </ScrollView>
     </SafeAreaView>
   )
 }
@@ -406,6 +533,16 @@ const styles = StyleSheet.create({
   btnView: {
     flexDirection: 'row',
     justifyContent: 'flex-end'
+  },
+
+  button: {
+    marginTop: 15,
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonText: {
+    fontFamily: 'Prompt-Regular',
+    fontSize: 15,
   },
 
   picture_save: {
@@ -426,6 +563,13 @@ const styles = StyleSheet.create({
     marginLeft: 55,
     position: "relative",
   },
+
+  message: {
+    color: colors.black,
+    fontSize: 14,
+    fontFamily: 'Prompt-Regular',
+    marginBottom: 20,
+  }
 
 });
 

@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { API_URL } from '../../utils/config';
 
 import * as RootNavigation from './../../navigation/RootNavigation';
+import { authHeader } from '../../utils/auth-header';
 
 interface User {
   id: number;
@@ -89,6 +90,18 @@ export const userRegiter = createAsyncThunk(
       body: JSON.stringify(data),
     });
     return (await response.json()) as UserData;
+  },
+);
+
+export const getUserData = createAsyncThunk(
+  'users/getUserData',
+  async (userId,appType) => {
+    let header: any = await authHeader();
+    const response = await fetch(`${API_URL}/users/getUserData/${userId}/${appType}`, {
+      method: 'GET',
+      headers: header,
+    });
+    return (await response.json()) as any;
   },
 );
 
@@ -227,16 +240,35 @@ export const forgotPassword = createAsyncThunk(
   },
 );
 
+
+export const accountDeletion = createAsyncThunk(
+  'users/accountDeletion',
+  async (data,{ getState }) => {
+    const selectedLanguage = getState().language.selectedLanguage;
+    const response = await fetch(`${API_URL}/users/account_deletion`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Accept-Language': selectedLanguage, 
+      },
+      body: JSON.stringify(data),
+    });
+    return (await response.json()) as UserData;
+  },
+);
+
 export const postUserDeviceToken = createAsyncThunk(
   'users/postUserDeviceToken',
-  async ({ userId, deviceToken }: { userId: string, deviceToken: string }) => {
+  async ({ userId, data }:any) => {
+    // console.log('user device token sent',deviceToken);
     const response = await fetch(`${API_URL}/users/device_token/${userId}`, {
       method: 'PUT',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ deviceToken }),
+      body: JSON.stringify(data),
     });
     return response.json();
   },
@@ -260,6 +292,7 @@ export const resetPassword = createAsyncThunk(
 function logout(state: any) {
   console.log('::: USER LOGOUT CALLED :::');
   state.user = {};
+  state.residence={};
 }
 
 function updateStatus(state: any, status: any) {
@@ -368,7 +401,7 @@ const userSlice = createSlice({
             state.loading = true;
           });
           builder.addCase(postUserDeviceToken.fulfilled, (state, action) => {
-            if (action.payload.status) {
+            if (action.payload && action.payload.status) {
               state.deviceToken = action.payload.data.token;
             }
             state.loading = false;
@@ -654,6 +687,71 @@ const userSlice = createSlice({
     });
     builder.addCase(updateProfile.rejected, (state, action) => {
       console.log('Rejected');
+      state.loading = false;
+      updateStatus(state, '');
+    });
+
+
+    //get user Data
+
+    builder.addCase(getUserData.pending, state => {
+      console.log('Pending');
+      updateStatus(state, '');
+      state.loading = true;
+    });
+    builder.addCase(getUserData.fulfilled, (state, action) => {
+      console.log('Fulfilled case');
+      console.log(action.payload);
+
+      if (action.payload.status){
+        state.user = {
+          ...state.user,
+          ...action.payload.data.user,
+        };
+  
+        state.residence={
+          ...state.residence,
+          ...action.payload.data.location
+         }
+  
+        if (action.payload.data.token) {
+          state.user.token = action.payload.data.token;
+        }
+      }
+
+      state.loading = false;
+    });
+    builder.addCase(getUserData.rejected, (state, action) => {
+      console.log('Rejected');
+      console.log(action.error);
+      updateStatus(state, 'Something went wrong, please try again later');
+      state.loading = false;
+    });
+
+
+    //RESET PASSWORD
+    builder.addCase(accountDeletion.pending, state => {
+      console.log('Pending');
+      state.loading = true;
+      updateStatus(state, '');
+    });
+    builder.addCase(accountDeletion.fulfilled, (state, action) => {
+      console.log('Fulfilled case');
+      console.log(action.payload);
+
+      state.loading = false;
+      updateStatus(state, '');
+
+      if (action.payload.status) {
+       
+        updateStatus(state, '');
+      } else {
+        updateStatus(state, action.payload);
+      }
+    });
+    builder.addCase(accountDeletion.rejected, (state, action) => {
+      console.log('Rejected');
+      console.log(action.error);
       state.loading = false;
       updateStatus(state, '');
     });
